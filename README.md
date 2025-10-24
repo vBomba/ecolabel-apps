@@ -1,116 +1,188 @@
-# EcoLabel dla Aplikacji 🌿
+# 🌱 EcoLabel - Analiza ekologiczności stron internetowych
 
-Uniwersalny analizator ekologiczności stron internetowych z obsługą rozdzielczości desktop, automatyczną obsługą zgód na cookies oraz obliczaniem EcoScore.
+Nowoczesny interfejs webowy do analizy ekologiczności stron internetowych wykorzystujący Lighthouse i własny algorytm EcoScore.
 
-## 🚀 Funkcje
+## 🚀 Szybki start
 
-- **Uniwersalna analiza** - działa z dowolnymi stronami internetowymi
-- **Rozdzielczość desktop** - zoptymalizowane dla przeglądarek desktop (1920x1080)
-- **Automatyczna obsługa zgód na cookies** - znajduje i klika przyciski "Akceptuj"
-- **Obsługa wielu języków** - w tym polski, angielski i inne
-- **Kompleksowy EcoScore** - analizuje wydajność, rozmiar plików, czas ładowania i inne
-- **Integracja z Lighthouse** - wykorzystuje Google Lighthouse do analizy
-- **Automatyczne zapisywanie raportów** - tworzy pliki JSON ze szczegółowymi wynikami
-- **Szczegółowy raport** - pokazuje rozbicie po wszystkich komponentach
-
-## 📦 Instalacja
+### 1. Instalacja zależności
 
 ```bash
 npm install
 ```
 
-## 🎯 Użycie
-
-### Analiza jednej strony
+### 2. Kompilacja stylów SCSS
 
 ```bash
-node index.js https://example.com
+npm run build-css-once
 ```
 
-### Analiza wielu stron
+### 3. Uruchomienie serwera webowego
 
 ```bash
-node index.js https://strona1.com https://strona2.com https://strona3.com
+npm start
 ```
 
-### Analiza zapisanych raportów
+### 4. Otwarcie w przeglądarce
+
+Przejdź na http://localhost:3000
+
+## 📋 Funkcjonalność
+
+### ✨ Główne możliwości
+
+- **Wprowadzanie URL** - prosty interfejs do wprowadzania URL strony
+- **Postęp analizy** - wizualne śledzenie etapów analizy
+- **Szczegółowe wyniki** - pełny raport z EcoScore i metrykami
+- **Rekomendacje** - konkretne porady do poprawy
+- **Pobieranie raportów** - możliwość zapisania wyników analizy
+
+### 🎯 Analizowane metryki
+
+- **EcoScore** - ogólna ocena ekologiczności (0-100)
+- **Wydajność** - ocena szybkości ładowania
+- **Rozmiar strony** - całkowity rozmiar zasobów
+- **Czas ładowania** - czas wykonania JavaScript
+- **Zielony hosting** - wykorzystanie energii odnawialnej
+- **Optymalizacja obrazów** - efektywność obrazów
+- **CLS** - Cumulative Layout Shift
+
+## 🛠️ Stack technologiczny
+
+### Frontend
+
+- **HTML5** - semantyczna struktura
+- **SCSS** - nowoczesne style z zmiennymi i mixinami
+- **Vanilla JavaScript** - bez zależności
+- **Lokalne ikony SVG** - zamiast Font Awesome
+
+### Backend
+
+- **Node.js** - platforma serwerowa
+- **Express.js** - framework webowy
+- **Puppeteer** - automatyzacja przeglądarki
+- **Lighthouse** - analiza wydajności
+
+## 📁 Struktura projektu
+
+```
+eco/
+├── public/                 # Interfejs webowy
+│   ├── index.html         # Strona główna
+│   ├── styles.css         # Skompilowane style
+│   └── script.js          # JavaScript klienta
+├── src/                   # Źródła SCSS
+│   └── styles/
+│       ├── main.scss      # Główny plik SCSS
+│       ├── _variables.scss # Zmienne
+│       ├── _mixins.scss   # Mixiny
+│       └── _icons.scss    # Lokalne ikony
+├── reports/               # Raporty analizy
+├── server.js              # Serwer webowy
+├── index.js               # Wersja CLI
+└── package.json           # Zależności
+```
+
+## 🎨 Design
+
+### Paleta kolorów
+
+- **Główny**: Zielony gradient (#4CAF50 → #2E7D32)
+- **Tło**: Niebiesko-fioletowy gradient
+- **Karty**: Półprzezroczyste białe z rozmyciem
+
+### Responsywność
+
+- Urządzenia mobilne (320px+)
+- Tablety (768px+)
+- Desktop (1200px+)
+
+## 🔧 API Endpoints
+
+### POST /api/analyze
+
+Analiza strony internetowej
+
+```json
+{
+  "url": "https://example.com"
+}
+```
+
+### GET /api/reports
+
+Pobierz listę raportów
+
+### GET /api/reports/:filename
+
+Pobierz konkretny raport
+
+## 📊 System oceniania
+
+### EcoScore (0-100)
+
+- **A (80-100)**: Doskonała efektywność ekologiczna
+- **B (60-79)**: Dobra efektywność z niewielkimi poprawkami
+- **C (40-59)**: Zadowalająca z umiarkowanymi poprawkami
+- **D (20-39)**: Wymaga znaczących poprawek
+- **F (0-19)**: Krytyczne problemy
+
+### Algorytm obliczania
+
+```
+EcoScore = Wydajność × 0.4 +
+           ZnormalizowaneBajty × 0.2 +
+           ZnormalizowanyBootup × 0.15 +
+           ZielonyHosting × 0.1 +
+           OptymalizacjaObrazów × 0.1 +
+           ZnormalizowanyCLS × 0.05
+```
+
+## 🚀 Komendy
 
 ```bash
-# Raporty są automatycznie zapisywane jako report-{domena}-{timestamp}.json
-ls reports/
+# Uruchomienie serwera webowego
+npm start
+
+# Rozwój z automatycznym przeładowaniem
+npm run dev
+
+# Wersja CLI
+npm run cli
+
+# Kompilacja stylów SCSS
+npm run build-css
+
+# Jednorazowa kompilacja stylów
+npm run build-css-once
+
+# Testowanie
+npm test
 ```
 
-## 📊 Komponenty EcoScore
+## 🌍 Korzyści ekologiczne
 
-EcoScore jest obliczany na podstawie:
+- **Zmniejszenie zużycia energii** - optymalizacja stron internetowych
+- **Poprawa wydajności** - szybsze ładowanie
+- **Zielony hosting** - wsparcie energii odnawialnej
+- **Efektywność zasobów** - minimalizacja wykorzystania
 
-- **Performance (40%)** - Wynik Performance z Lighthouse
-- **Bytes (20%)** - Całkowity rozmiar strony
-- **Bootup (15%)** - Czas ładowania JavaScript
-- **Hosting (10%)** - Zielony hosting
-- **Images (10%)** - Optymalizacja obrazów
-- **CLS (5%)** - Cumulative Layout Shift
+## 🔮 Przyszłe ulepszenia
 
-## 🏆 Oceny EcoScore
+- [ ] Rzeczywisty postęp analizy przez WebSockets
+- [ ] Porównywanie stron
+- [ ] Historia analiz
+- [ ] Eksport raportów do PDF
+- [ ] Tryb ciemny
+- [ ] Wielojęzyczność
 
-- **A++** (95-100) - Doskonałe
-- **A+** (85-94) - Bardzo dobre
-- **A** (75-84) - Dobre
-- **B** (65-74) - Zadowalające
-- **C** (55-64) - Poniżej średniej
-- **D** (45-54) - Słabe
-- **E** (35-44) - Bardzo słabe
-- **F** (25-34) - Krytyczne
-- **G** (0-24) - Niedopuszczalne
+## 📝 Licencja
 
-## 🍪 Zgody na Cookies
+MIT License - zobacz plik LICENSE dla szczegółów.
 
-Program automatycznie obsługuje banery cookies, szukając przycisków z tekstem:
+## 👥 Autor
 
-- "Accept", "Accept Cookies", "Accept All"
-- "I Accept", "I Agree", "OK", "Agree"
-- "Consent", "Allow", "Allow All"
-- "Akceptuj", "Akceptuję", "Zgadzam się" (polski)
+**vBomba** - Deweloper EcoLabel
 
-## 🔧 Wymagania techniczne
+---
 
-- Node.js >= 18.0.0
-- Puppeteer do automatyzacji przeglądarki
-- Lighthouse do analizy wydajności
-
-## 📝 Przykład wyjścia
-
-```
-🌍 PODSUMOWANIE RAPORTU EKO
-──────────────────────────────
-
-🌿 https://example.com
-  Lighthouse: 85/100
-  Total bytes: 0.8 MB
-  Bootup: 1200 ms
-  CLS: 0.05
-  ImagesScore: 90.0
-  ➡️ EcoScore: 78.5/100 (A)
-
-──────────────────────────────
-🌱 Średni EcoScore: 78.5 (A)
-──────────────────────────────
-```
-
-## 🐛 Znane problemy
-
-- Na Windows mogą występować problemy z Lighthouse przez blokowanie plików
-- Zalecane jest używanie Linux/Mac dla stabilnej pracy
-- Dla skomplikowanych stron może być potrzebny więcej czasu na analizę
-
-## 📄 Licencja
-
-MIT License
-
-## 🤝 Wkład
-
-Zapraszamy do pull requests i issues dla ulepszenia funkcjonalności!
-
-## 👨‍💻 Autor
-
-**vBomba** - Twórca i główny deweloper EcoLabel dla Aplikacji
+🌱 **EcoLabel** - Analiza ekologiczności stron internetowych dla lepszej przyszłości!

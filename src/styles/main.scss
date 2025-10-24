@@ -1,0 +1,495 @@
+@import "variables";
+@import "mixins";
+@import "icons";
+
+// Reset i podstawowe style
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: $font-family;
+  line-height: 1.6;
+  color: #333;
+  background: $background-gradient;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: $container-max-width;
+  margin: 0 auto;
+  padding: $spacing-xl;
+  min-height: 100vh;
+  @include flex-column;
+}
+
+// Header
+.header {
+  text-align: center;
+  margin-bottom: $spacing-xxl;
+  @include card-base;
+}
+
+.logo {
+  @include flex-center;
+  gap: $spacing-lg;
+  margin-bottom: $spacing-md;
+
+  .icon-leaf {
+    @include icon-size(2.5rem);
+    color: $primary-color;
+  }
+
+  h1 {
+    @include heading-1;
+  }
+}
+
+.subtitle {
+  font-size: $font-size-lg;
+  color: #666;
+  font-weight: $font-weight-light;
+}
+
+// Główna zawartość
+.main-content {
+  flex: 1;
+  @include flex-column;
+  gap: $spacing-xxl;
+}
+
+// Sekcja wprowadzania
+.input-section {
+  @include card-base;
+}
+
+.input-group {
+  @include flex-column;
+  gap: $spacing-lg;
+
+  label {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: #333;
+  }
+}
+
+.input-wrapper {
+  @include flex-between;
+  gap: $spacing-lg;
+  align-items: stretch;
+}
+
+#url-input {
+  flex: 1;
+  @include input-base;
+}
+
+.analyze-btn {
+  @include button-primary;
+}
+
+// Sekcja postępu
+.progress-section {
+  @include card-base;
+}
+
+.progress-header {
+  h3 {
+    @include heading-3;
+    text-align: center;
+    margin-bottom: $spacing-xxl;
+  }
+}
+
+.progress-steps {
+  @include flex-between;
+  margin-bottom: $spacing-xxl;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e0e0e0;
+    z-index: 1;
+  }
+}
+
+.step {
+  @include flex-column;
+  align-items: center;
+  gap: $spacing-md;
+  position: relative;
+  z-index: 2;
+  background: white;
+  padding: 0 $spacing-md;
+
+  .icon {
+    width: 40px;
+    height: 40px;
+    border-radius: $border-radius-full;
+    @include flex-center;
+    background: #e0e0e0;
+    color: #999;
+    transition: all $transition-normal;
+  }
+
+  &.active .icon {
+    background: $primary-color;
+    color: white;
+  }
+
+  &.completed .icon {
+    background: $primary-color;
+    color: white;
+  }
+
+  span {
+    font-size: $font-size-sm;
+    color: #666;
+    text-align: center;
+    max-width: 100px;
+  }
+
+  &.active span {
+    color: $primary-color;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: $spacing-lg;
+}
+
+.progress-fill {
+  height: 100%;
+  background: $primary-gradient;
+  width: 0%;
+  transition: width $transition-slow;
+}
+
+.progress-text {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+// Sekcja wyników
+.results-section {
+  @include card-base;
+}
+
+.results-header {
+  text-align: center;
+  margin-bottom: $spacing-xxl;
+
+  h3 {
+    @include heading-3;
+    margin-bottom: $spacing-md;
+  }
+}
+
+.url-display {
+  color: #666;
+  font-family: monospace;
+  background: #f5f5f5;
+  padding: $spacing-md $spacing-lg;
+  border-radius: $border-radius-sm;
+  display: inline-block;
+}
+
+// Karta wyniku
+.score-card {
+  text-align: center;
+  margin-bottom: $spacing-xxl;
+  padding: $spacing-xxl;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-radius: $border-radius-xl;
+  border: 2px solid #e0e0e0;
+}
+
+.score-main {
+  @include flex-center;
+  gap: $spacing-xxl;
+  margin-bottom: $spacing-xl;
+}
+
+.score-circle {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: $border-radius-full;
+  background: conic-gradient(
+    $primary-color 0deg,
+    $primary-color 0deg,
+    #e0e0e0 0deg
+  );
+  @include flex-center;
+  @include flex-column;
+  transition: all $transition-slow;
+
+  &::before {
+    content: "";
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: white;
+    border-radius: $border-radius-full;
+  }
+}
+
+.score-value {
+  font-size: $font-size-h2;
+  font-weight: $font-weight-bold;
+  color: #333;
+  z-index: 1;
+}
+
+.score-label {
+  font-size: $font-size-sm;
+  color: #666;
+  z-index: 1;
+}
+
+.score-grade {
+  font-size: 4rem;
+  font-weight: $font-weight-bold;
+  color: $primary-color;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.score-description {
+  font-size: $font-size-lg;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+// Siatka metryk
+.metrics-grid {
+  @include grid-responsive(250px);
+  margin-bottom: $spacing-xxl;
+}
+
+.metric-card {
+  background: #f8f9fa;
+  padding: $spacing-xl;
+  border-radius: $border-radius-lg;
+  border: 1px solid #e0e0e0;
+  @include flex-center;
+  gap: $spacing-lg;
+  @include card-hover;
+}
+
+.metric-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: $border-radius-md;
+  background: $primary-gradient;
+  @include flex-center;
+  color: white;
+  font-size: $font-size-xl;
+}
+
+.metric-content {
+  flex: 1;
+}
+
+.metric-label {
+  font-size: $font-size-sm;
+  color: #666;
+  margin-bottom: $spacing-sm;
+}
+
+.metric-value {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: #333;
+}
+
+// Rekomendacje
+.recommendations {
+  background: #f8f9fa;
+  padding: $spacing-xl;
+  border-radius: $border-radius-lg;
+  border-left: 4px solid $primary-color;
+  margin-bottom: $spacing-xxl;
+
+  h4 {
+    @include heading-4;
+    margin-bottom: $spacing-lg;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  li {
+    padding: $spacing-sm 0;
+    color: #666;
+    position: relative;
+    padding-left: $spacing-xl;
+
+    &::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: $primary-color;
+      font-weight: $font-weight-bold;
+    }
+  }
+}
+
+// Akcje
+.actions {
+  @include flex-center;
+  gap: $spacing-lg;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  @include button-primary;
+}
+
+.btn-secondary {
+  @include button-secondary;
+}
+
+// Sekcja błędów
+.error-section {
+  @include card-base;
+  text-align: center;
+
+  .icon-exclamation-triangle {
+    margin-bottom: $spacing-xl;
+  }
+
+  h3 {
+    @include heading-3;
+    margin-bottom: $spacing-lg;
+  }
+
+  p {
+    color: #666;
+    margin-bottom: $spacing-xl;
+  }
+}
+
+// Stopka
+.footer {
+  text-align: center;
+  padding: $spacing-xl 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: $font-size-sm;
+}
+
+// Klasy pomocnicze
+.hidden {
+  display: none !important;
+}
+
+// Kolory ocen
+.grade-A {
+  color: $primary-color !important;
+}
+.grade-B {
+  color: $secondary-color !important;
+}
+.grade-C {
+  color: $warning-color !important;
+}
+.grade-D {
+  color: #ff9800 !important;
+}
+.grade-F {
+  color: $danger-color !important;
+}
+
+// Kolory kółek wyników na podstawie oceny
+.score-circle.grade-A {
+  background: conic-gradient(
+    $primary-color 0deg,
+    $primary-color 360deg,
+    #e0e0e0 360deg
+  );
+}
+.score-circle.grade-B {
+  background: conic-gradient(
+    $secondary-color 0deg,
+    $secondary-color 360deg,
+    #e0e0e0 360deg
+  );
+}
+.score-circle.grade-C {
+  background: conic-gradient(
+    $warning-color 0deg,
+    $warning-color 360deg,
+    #e0e0e0 360deg
+  );
+}
+.score-circle.grade-D {
+  background: conic-gradient(#ff9800 0deg, #ff9800 360deg, #e0e0e0 360deg);
+}
+.score-circle.grade-F {
+  background: conic-gradient(
+    $danger-color 0deg,
+    $danger-color 360deg,
+    #e0e0e0 360deg
+  );
+}
+
+// Responsywność
+@include mobile {
+  .container {
+    padding: $spacing-md;
+  }
+
+  .input-wrapper {
+    @include flex-column;
+  }
+
+  .analyze-btn {
+    width: 100%;
+  }
+
+  .progress-steps {
+    @include flex-column;
+    gap: $spacing-xl;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .score-main {
+    @include flex-column;
+    gap: $spacing-xl;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    @include flex-column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EcoLabel - Analiza ekologiczności stron internetowych</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <div class="logo">
+          <i class="icon icon-leaf"></i>
+          <h1>EcoLabel</h1>
+        </div>
+        <p class="subtitle">Analiza ekologiczności stron internetowych</p>
+      </header>
+
+      <main class="main-content">
+        <div class="input-section">
+          <div class="input-group">
+            <label for="url-input"
+              >Wprowadź URL strony internetowej do analizy:</label
+            >
+            <div class="input-wrapper">
+              <input
+                type="url"
+                id="url-input"
+                placeholder="https://example.com"
+                required
+              />
+              <button id="analyze-btn" class="analyze-btn">
+                <i class="icon icon-search"></i>
+                Analizuj
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div id="progress-section" class="progress-section hidden">
+          <div class="progress-header">
+            <h3>Analiza w toku...</h3>
+            <div class="progress-steps">
+              <div class="step active" id="step-loading">
+                <i class="icon icon-spinner"></i>
+                <span>Ładowanie strony</span>
+              </div>
+              <div class="step" id="step-lighthouse">
+                <i class="icon icon-chart-line"></i>
+                <span>Uruchamianie Lighthouse</span>
+              </div>
+              <div class="step" id="step-analysis">
+                <i class="icon icon-calculator"></i>
+                <span>Obliczanie EcoScore</span>
+              </div>
+              <div class="step" id="step-complete">
+                <i class="icon icon-check"></i>
+                <span>Zakończono</span>
+              </div>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <div class="progress-text" id="progress-text">
+            Przygotowywanie do analizy...
+          </div>
+        </div>
+
+        <div id="results-section" class="results-section hidden">
+          <div class="results-header">
+            <h3>Wyniki analizy</h3>
+            <div class="url-display" id="analyzed-url"></div>
+          </div>
+
+          <div class="score-card">
+            <div class="score-main">
+              <div class="score-circle" id="score-circle">
+                <span class="score-value" id="score-value">0</span>
+                <span class="score-label">EcoScore</span>
+              </div>
+              <div class="score-grade" id="score-grade">F</div>
+            </div>
+            <div class="score-description" id="score-description">
+              Twoja strona wymaga znacznej poprawy ekologiczności
+            </div>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-icon">
+                <i class="icon icon-tachometer-alt"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-label">Wydajność</div>
+                <div class="metric-value" id="performance-value">0/100</div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon">
+                <i class="icon icon-database"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-label">Rozmiar strony</div>
+                <div class="metric-value" id="size-value">0 KB</div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon">
+                <i class="icon icon-clock"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-label">Czas ładowania</div>
+                <div class="metric-value" id="bootup-value">0 ms</div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon">
+                <i class="icon icon-leaf"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-label">Zielony hosting</div>
+                <div class="metric-value" id="hosting-value">Nie</div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon">
+                <i class="icon icon-image"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-label">Optymalizacja obrazów</div>
+                <div class="metric-value" id="images-value">Nie</div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon">
+                <i class="icon icon-ruler"></i>
+              </div>
+              <div class="metric-content">
+                <div class="metric-label">CLS</div>
+                <div class="metric-value" id="cls-value">0.000</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="recommendations">
+            <h4>Rekomendacje do poprawy:</h4>
+            <ul id="recommendations-list">
+              <!-- Rekomendacje będą dodane dynamicznie -->
+            </ul>
+          </div>
+
+          <div class="actions">
+            <button id="new-analysis-btn" class="btn-secondary">
+              <i class="icon icon-plus"></i>
+              Nowa analiza
+            </button>
+            <button id="download-report-btn" class="btn-primary">
+              <i class="icon icon-download"></i>
+              Pobierz raport
+            </button>
+          </div>
+        </div>
+
+        <div id="error-section" class="error-section hidden">
+          <div class="error-content">
+            <i class="icon icon-exclamation-triangle"></i>
+            <h3>Błąd analizy</h3>
+            <p id="error-message">
+              Wystąpił błąd podczas analizy strony internetowej
+            </p>
+            <button id="retry-btn" class="btn-primary">
+              <i class="icon icon-redo"></i>
+              Spróbuj ponownie
+            </button>
+          </div>
+        </div>
+      </main>
+
+      <footer class="footer">
+        <p>&copy; 2025 EcoLabel - Analiza ekologiczności stron internetowych</p>
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

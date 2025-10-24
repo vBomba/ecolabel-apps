@@ -8,6 +8,7 @@ yarn-error.log*
 # Raporty analizy
 reports/
 *.json
+!package.json
 
 # Logs
 logs

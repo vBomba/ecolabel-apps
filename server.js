@@ -77,16 +77,23 @@ function saveAndAnalyzeReport(report, url) {
 async function runLighthouseWithCookieHandling(url) {
   console.log(`\n🔍 Analizuję ${url} ...`);
 
+  const browserPath = getBrowserPath();
   const browser = await puppeteer.launch({
-    executablePath: getBrowserPath(),
+    executablePath: browserPath,
     headless: true,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
       "--disable-web-security",
       "--disable-features=VizDisplayCompositor",
-      "--window-size=1920,1080", // Rozdzielczość desktop
+      "--window-size=1920,1080",
       "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "--no-proxy-server",
+      "--proxy-bypass-list=*",
+      "--disable-proxy-certificate-handler",
+      "--disable-default-apps",
+      "--disable-extensions",
+      "--disable-plugins",
     ],
   });
 
@@ -208,11 +215,25 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something went wrong!" });
 });
 
-// Start server
-app.listen(PORT, () => {
+// Start server with error handling for port conflicts
+const server = app.listen(PORT, () => {
   console.log(`🌍 EcoLabel Server running on http://localhost:${PORT}`);
   console.log(`📊 API available at http://localhost:${PORT}/api`);
   console.log(`🌱 Ready to analyze websites!`);
+});
+
+server.on("error", (err) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(`❌ Port ${PORT} is already in use`);
+    console.log(`Trying port ${PORT + 1}...`);
+    app.listen(PORT + 1, () => {
+      console.log(`🌍 EcoLabel Server running on http://localhost:${PORT + 1}`);
+      console.log(`📊 API available at http://localhost:${PORT + 1}/api`);
+      console.log(`🌱 Ready to analyze websites!`);
+    });
+  } else {
+    console.error(err);
+  }
 });
 
 export default app;

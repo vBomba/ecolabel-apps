@@ -72,16 +72,23 @@ function saveAndAnalyzeReport(report, url) {
 async function runLighthouseWithCookieHandling(url) {
   console.log(`\n🔍 Analizuję ${url} ...`);
 
+  const browserPath = getBrowserPath();
   const browser = await puppeteer.launch({
-    executablePath: getBrowserPath(),
+    executablePath: browserPath,
     headless: true,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
       "--disable-web-security",
       "--disable-features=VizDisplayCompositor",
-      "--window-size=1920,1080", // Rozdzielczość desktop
+      "--window-size=1920,1080",
       "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "--no-proxy-server",
+      "--proxy-bypass-list=*",
+      "--disable-proxy-certificate-handler",
+      "--disable-default-apps",
+      "--disable-extensions",
+      "--disable-plugins",
     ],
   });
 

@@ -1,11 +1,11 @@
-// DOM Elements
+// --- Elementy DOM ---
 const urlInput = document.getElementById("url-input");
 const analyzeBtn = document.getElementById("analyze-btn");
 const progressSection = document.getElementById("progress-section");
 const resultsSection = document.getElementById("results-section");
 const errorSection = document.getElementById("error-section");
 
-// Progress elements
+// --- Elementy paska postępu ---
 const progressFill = document.getElementById("progress-fill");
 const progressText = document.getElementById("progress-text");
 const steps = {
@@ -15,7 +15,7 @@ const steps = {
   complete: document.getElementById("step-complete"),
 };
 
-// Results elements
+// --- Elementy wyników ---
 const analyzedUrl = document.getElementById("analyzed-url");
 const scoreValue = document.getElementById("score-value");
 const scoreGrade = document.getElementById("score-grade");
@@ -29,20 +29,39 @@ const imagesValue = document.getElementById("images-value");
 const clsValue = document.getElementById("cls-value");
 const recommendationsList = document.getElementById("recommendations-list");
 
-// Action buttons
+// --- Dodaj nowe elementy do analizy wielostronowej ---
+const multiPageSection = document.getElementById("multi-page-section");
+const multiUrlsInput = document.getElementById("multi-urls-input");
+const analyzeMultiBtn = document.getElementById("analyze-multi-btn");
+const multiResults = document.getElementById("multi-results");
+
+// --- Przyciski akcji ---
 const newAnalysisBtn = document.getElementById("new-analysis-btn");
 const downloadReportBtn = document.getElementById("download-report-btn");
 const retryBtn = document.getElementById("retry-btn");
 
-// State
+// --- Stan ---
 let currentAnalysisId = null;
 let currentReport = null;
 
-// Event listeners
+// --- Słuchacze zdarzeń ---
 analyzeBtn.addEventListener("click", startAnalysis);
 newAnalysisBtn.addEventListener("click", resetForm);
 retryBtn.addEventListener("click", retryAnalysis);
 downloadReportBtn.addEventListener("click", downloadReport);
+
+// --- Dodaj słuchacz wielostronowy ---
+if (analyzeMultiBtn) {
+  analyzeMultiBtn.addEventListener("click", startMultiPageAnalysis);
+}
+
+if (multiUrlsInput) {
+  multiUrlsInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter" && e.ctrlKey) {
+      startMultiPageAnalysis();
+    }
+  });
+}
 
 urlInput.addEventListener("keypress", (e) => {
   if (e.key === "Enter") {
@@ -50,7 +69,7 @@ urlInput.addEventListener("keypress", (e) => {
   }
 });
 
-// Main analysis function
+// --- Główna funkcja analizy ---
 async function startAnalysis() {
   const url = urlInput.value.trim();
 
@@ -65,19 +84,19 @@ async function startAnalysis() {
   }
 
   try {
-    // Reset UI
+    // Resetuj interfejs
     hideAllSections();
     showProgress();
     resetProgress();
 
-    // Disable form
+    // Wyłącz formularz
     analyzeBtn.disabled = true;
     urlInput.disabled = true;
 
-    // Start analysis
+    // Rozpocznij analizę
     await performAnalysis(url);
   } catch (error) {
-    console.error("Analysis error:", error);
+    console.error("Błąd analizy:", error);
     showError(`Błąd analizy: ${error.message}`);
   } finally {
     // Re-enable form
@@ -86,10 +105,10 @@ async function startAnalysis() {
   }
 }
 
-// Perform the actual analysis
+// --- Przeprowadź właściwą analizę ---
 async function performAnalysis(url) {
   try {
-    // Step 1: Loading page
+    // Etap 1: Ładowanie strony
     updateProgress(0, "Ładowanie strony...", "loading");
 
     const response = await fetch("/api/analyze", {
@@ -104,10 +123,10 @@ async function performAnalysis(url) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    // Step 2: Lighthouse analysis
+    // Etap 2: Analiza Lighthouse
     updateProgress(25, "Uruchamianie analizy Lighthouse...", "lighthouse");
 
-    // Simulate progress updates
+    // Symuluj aktualizacje postępu
     const progressInterval = setInterval(() => {
       const currentProgress = parseInt(progressFill.style.width) || 25;
       if (currentProgress < 75) {
@@ -115,14 +134,14 @@ async function performAnalysis(url) {
       }
     }, 1000);
 
-    // Step 3: Analysis calculation
+    // Etap 3: Obliczanie EcoScore
     updateProgress(75, "Obliczanie EcoScore...", "analysis");
 
     const result = await response.json();
 
     clearInterval(progressInterval);
 
-    // Step 4: Complete
+    // Etap 4: Complete
     updateProgress(100, "Analiza zakończona!", "complete");
 
     // Store results
@@ -138,12 +157,12 @@ async function performAnalysis(url) {
   }
 }
 
-// Update progress UI
+// --- Zaktualizuj pasek postępu ---
 function updateProgress(percentage, text, activeStep) {
   progressFill.style.width = `${percentage}%`;
   progressText.textContent = text;
 
-  // Update step states
+  // Zaktualizuj stany kroków
   Object.values(steps).forEach((step) => {
     step.classList.remove("active", "completed");
   });
@@ -165,15 +184,15 @@ function updateProgress(percentage, text, activeStep) {
   }
 }
 
-// Show results
+// --- Pokaż wyniki ---
 function showResults(result) {
   hideAllSections();
   resultsSection.classList.remove("hidden");
 
-  // Update URL display
+  // Zaktualizuj wyświetlanie adresu URL
   analyzedUrl.textContent = result.url;
 
-  // Update score
+  // Zaktualizuj wynik
   const ecoScore = result.ecoData.ecoScore;
   const grade = getGrade(ecoScore);
 
@@ -203,7 +222,7 @@ function showResults(result) {
   }, 100);
 }
 
-// Update recommendations based on analysis results
+// --- Zaktualizuj rekomendacje na podstawie wyników analizy ---
 function updateRecommendations(ecoData) {
   const recommendations = [];
 
@@ -257,7 +276,7 @@ function updateRecommendations(ecoData) {
   });
 }
 
-// Get grade based on score
+// --- Pobierz ocenę na podstawie wyniku ---
 function getGrade(score) {
   if (score >= 80) return "A";
   if (score >= 60) return "B";
@@ -266,7 +285,7 @@ function getGrade(score) {
   return "F";
 }
 
-// Get score description
+// --- Pobierz opis wyniku ---
 function getScoreDescription(score, grade) {
   const descriptions = {
     A: "Doskonale! Twoja strona ma wysoką efektywność ekologiczną",
@@ -278,27 +297,27 @@ function getScoreDescription(score, grade) {
   return descriptions[grade] || "Nieokreślone";
 }
 
-// Show error
+// --- Pokaż błąd ---
 function showError(message) {
   hideAllSections();
   errorSection.classList.remove("hidden");
   document.getElementById("error-message").textContent = message;
 }
 
-// Show progress
+// --- Pokaż postęp ---
 function showProgress() {
   hideAllSections();
   progressSection.classList.remove("hidden");
 }
 
-// Hide all sections
+// --- Ukryj wszystkie sekcje ---
 function hideAllSections() {
   progressSection.classList.add("hidden");
   resultsSection.classList.add("hidden");
   errorSection.classList.add("hidden");
 }
 
-// Reset progress
+// --- Resetuj postęp ---
 function resetProgress() {
   progressFill.style.width = "0%";
   progressText.textContent = "Przygotowywanie do analizy...";
@@ -307,7 +326,7 @@ function resetProgress() {
   });
 }
 
-// Reset form
+// --- Resetuj formularz ---
 function resetForm() {
   urlInput.value = "";
   hideAllSections();
@@ -315,7 +334,7 @@ function resetForm() {
   currentAnalysisId = null;
 }
 
-// Retry analysis
+// --- Ponów analizę ---
 function retryAnalysis() {
   if (urlInput.value.trim()) {
     startAnalysis();
@@ -324,7 +343,7 @@ function retryAnalysis() {
   }
 }
 
-// Download report
+// --- Pobierz raport ---
 function downloadReport() {
   if (!currentReport) {
     showError("Brak raportu do pobrania");
@@ -345,7 +364,206 @@ function downloadReport() {
   URL.revokeObjectURL(url);
 }
 
-// Validate URL
+// --- Analiza wielostronowa ---
+async function startMultiPageAnalysis() {
+  const urlsText = multiUrlsInput.value.trim();
+
+  if (!urlsText) {
+    showError("Proszę wprowadzić co najmniej jeden URL");
+    return;
+  }
+
+  // Parse URLs (one per line)
+  const urls = urlsText
+    .split("\n")
+    .map((url) => url.trim())
+    .filter((url) => url.length > 0);
+
+  if (urls.length === 0) {
+    showError("Proszę wprowadzić prawidłowe adresy URL");
+    return;
+  }
+
+  if (urls.length > 10) {
+    showError("Maksymalnie 10 URL-i na zapytanie");
+    return;
+  }
+
+  // Validate all URLs
+  for (const url of urls) {
+    if (!isValidUrl(url)) {
+      showError(`Nieprawidłowy URL: ${url}`);
+      return;
+    }
+  }
+
+  try {
+    // Reset UI
+    hideAllSections();
+    showProgress();
+    resetProgress();
+
+    // Disable form
+    analyzeMultiBtn.disabled = true;
+    multiUrlsInput.disabled = true;
+
+    // Start analysis
+    await performMultiPageAnalysis(urls);
+  } catch (error) {
+    console.error("Multi-page analysis error:", error);
+    showError(`Błąd analizy: ${error.message}`);
+  } finally {
+    // Re-enable form
+    analyzeMultiBtn.disabled = false;
+    multiUrlsInput.disabled = false;
+  }
+}
+
+// --- Wykonaj analizę wielostronną ---
+async function performMultiPageAnalysis(urls) {
+  try {
+    updateProgress(
+      0,
+      `Rozpoczynanie analizy ${urls.length} stron...`,
+      "loading"
+    );
+
+    const response = await fetch("/api/analyze-multiple", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ urls }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || `HTTP error! status: ${response.status}`);
+    }
+
+    updateProgress(50, "Analiza Lighthouse w toku...", "lighthouse");
+
+    const progressInterval = setInterval(() => {
+      const currentProgress = parseInt(progressFill.style.width) || 50;
+      if (currentProgress < 75) {
+        updateProgress(currentProgress + 3, "Analiza w toku...", "lighthouse");
+      }
+    }, 1000);
+
+    updateProgress(75, "Obliczanie EcoScore dla serwisu...", "analysis");
+
+    const result = await response.json();
+
+    clearInterval(progressInterval);
+
+    updateProgress(100, "Analiza zakończona!", "complete");
+
+    // Store results
+    currentReport = result;
+    currentAnalysisId = `website-report-${result.domain}`;
+
+    setTimeout(() => {
+      showMultiPageResults(result);
+    }, 1000);
+  } catch (error) {
+    throw new Error(`Błąd podczas analizy: ${error.message}`);
+  }
+}
+
+// --- Pokaż wyniki wielostronne ---
+function showMultiPageResults(result) {
+  hideAllSections();
+
+  const resultsDiv = document.getElementById("results-section");
+  resultsDiv.classList.remove("hidden");
+
+  // Update header
+  analyzedUrl.textContent = `Serwis: ${result.domain} (${result.successfulAnalyses} stron)`;
+
+  // Update score
+  const ecoScore = result.aggregatedEcoData.ecoScore;
+  const label = result.ecoLabel;
+
+  scoreValue.textContent = ecoScore;
+  scoreGrade.textContent = label.grade;
+  scoreGrade.className = `grade-${label.grade}`;
+  scoreCircle.className = `score-circle grade-${label.grade}`;
+  scoreCircle.style.background = `conic-gradient(${label.color} 0deg, ${
+    label.color
+  } ${(ecoScore / 100) * 360}deg, #e0e0e0 ${(ecoScore / 100) * 360}deg)`;
+
+  // Update score description
+  scoreDescription.textContent = `${label.label} - Średnia ocena wszystkich ${result.successfulAnalyses} analizowanych stron`;
+
+  // Update metrics
+  const data = result.aggregatedEcoData;
+  performanceValue.textContent = `${data.performance.toFixed(1)}/100`;
+  sizeValue.textContent = `${(data.totalBytes / 1024).toFixed(1)} KB`;
+  bootupValue.textContent = `${data.bootupTime.toFixed(1)} ms`;
+  hostingValue.textContent = data.hostingGreen ? "✅ Tak" : "❌ Nie";
+  imagesValue.textContent = data.imageOptimization ? "✅ Tak" : "❌ Nie";
+  clsValue.textContent = data.cls.toFixed(3);
+
+  // Show individual page results
+  const pagesHtml = result.pages
+    .map(
+      (page, i) => `
+    <div class="page-result">
+      <div class="page-number">${i + 1}</div>
+      <div class="page-url">${page.url}</div>
+      <div class="page-score">
+        <span class="score ${getGrade(page.ecoData.ecoScore)}">${
+        page.ecoData.ecoScore
+      }</span>
+        <span class="performance">${page.ecoData.performance.toFixed(
+          0
+        )}/100</span>
+      </div>
+    </div>
+  `
+    )
+    .join("");
+
+  const pagesContainer =
+    document.getElementById("pages-list") || createPagesContainer();
+  pagesContainer.innerHTML = pagesHtml;
+
+  updateRecommendations(data);
+}
+
+// --- Utwórz kontener z listą stron, jeśli nie istnieje ---
+function createPagesContainer() {
+  const container = document.createElement("div");
+  container.id = "pages-list";
+  container.className = "pages-list";
+  const resultsSection = document.getElementById("results-section");
+  resultsSection.appendChild(container);
+  return container;
+}
+
+// --- Pobierz raport wielostronny ---
+function downloadMultiPageReport() {
+  if (!currentReport) {
+    showError("Brak raportu do pobrania");
+    return;
+  }
+
+  const dataStr = JSON.stringify(currentReport, null, 2);
+  const dataBlob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(dataBlob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download =
+    currentAnalysisId || `website-report-${new Date().toISOString()}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  URL.revokeObjectURL(url);
+}
+
+// --- Waliduj adres URL ---
 function isValidUrl(string) {
   try {
     new URL(string);
@@ -355,19 +573,19 @@ function isValidUrl(string) {
   }
 }
 
-// Initialize app
+// --- Zainicjuj aplikację ---
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("EcoLabel UI zainicjalizowany");
+  console.log("Interfejs EcoLabel zainicjalizowany");
 
-  // Focus on URL input
+  // Ustaw fokus na wejściu URL
   urlInput.focus();
 
-  // Add some sample URLs for testing
+  // Dodaj przykładowe adresy URL do testowania
   const sampleUrls = [
-    "https://www.bnpparibas.pl/",
-    "https://example.com",
-    "https://www.google.com",
+    "https://www.example.com/",
+    "https://www.example.com/about",
+    "https://www.example.com/services",
   ];
 
-  // You can add a dropdown or suggestions here if needed
+  // Możesz dodać tutaj dropdown lub sugestie
 });

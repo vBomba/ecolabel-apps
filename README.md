@@ -105,6 +105,8 @@ eco/
 └── package.json           # Zależności
 ```
 
+👉 **Pełna dokumentacja struktury**: Zapoznaj się z [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) aby dowiedzieć się więcej o organizacji projektu.
+
 ## 🎨 Design
 
 ### Paleta kolorów
@@ -209,3 +211,154 @@ MIT License - zobacz plik LICENSE dla szczegółów.
 ---
 
 🌱 **EcoLabel** - Analiza ekologiczności stron internetowych dla lepszej przyszłości!
+
+## 🆕 Nowa Funkcjonalność: Analiza Wielu Stron Serwisu
+
+### O Funkcji
+
+EcoLabel teraz obsługuje analizę **kilku stron jednego serwisu** jednocześnie. Pozwala to na:
+
+- 📊 Analizę wielu URL-i z tego samego serwisu
+- 🏆 Wyznaczenie **wspólnej etykiety ekologiczności** dla całego serwisu
+- 📈 Porównanie wydajności między stronami
+- 📄 Pobranie ujednoliconego raportu
+
+### Jak Używać
+
+#### Via Web UI
+
+1. Przewiń w dół do sekcji **"🌐 Analiza wielu stron serwisu"**
+2. Wklej adresy URL (jeden na linię, maksymalnie 10)
+3. Kliknij **"Analizuj wiele stron"**
+4. Czekaj na wyniki
+
+Przykład:
+
+```
+https://www.example.com/
+https://www.example.com/about
+https://www.example.com/services
+```
+
+#### Via API
+
+**Endpoint:** `POST /api/analyze-multiple`
+
+**Request:**
+
+```json
+{
+  "urls": [
+    "https://www.example.com/",
+    "https://www.example.com/page1",
+    "https://www.example.com/page2"
+  ]
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "domain": "example.com",
+  "analyzedPages": 3,
+  "successfulAnalyses": 3,
+  "failedAnalyses": 0,
+  "analyzedAt": "2025-10-24T19:30:00.000Z",
+  "aggregatedEcoData": {
+    "ecoScore": 72,
+    "performance": 65.4,
+    "totalBytes": 2048576,
+    "bootupTime": 1250,
+    "hostingGreen": 0,
+    "imageOptimization": 0,
+    "cls": 0.05
+  },
+  "ecoLabel": {
+    "grade": "B",
+    "label": "Good",
+    "color": "#f39c12"
+  },
+  "pages": [
+    {
+      "url": "https://www.example.com/",
+      "ecoData": {
+        /* ... */
+      }
+    }
+    /* ... more pages ... */
+  ],
+  "errors": [] // jeśli były
+}
+```
+
+### Dostęne Endpoints
+
+#### Analiza Wielu Stron
+
+- **POST** `/api/analyze-multiple` - Analizuje wiele stron jednego serwisu
+
+#### Raporty Serwisów
+
+- **GET** `/api/website-reports` - Lista wszystkich raportów serwisów
+- **GET** `/api/website-reports/:filename` - Pobiera szczegółowy raport serwisu
+
+### Eco-Label Grading
+
+| Grade | Ocena     | Zakres | Kolor           |
+| ----- | --------- | ------ | --------------- |
+| A     | Excellent | 80-100 | Zielony         |
+| B     | Good      | 60-79  | Żółty           |
+| C     | Fair      | 40-59  | Pomarańczowy    |
+| D     | Poor      | 20-39  | Czerwony        |
+| F     | Critical  | 0-19   | Ciemna czerwień |
+
+### Algorytm Agregacji
+
+Wynikowa etyketa serwisu jest obliczana na podstawie **średnich wartości** z wszystkich analizowanych stron:
+
+```javascript
+aggregatedEcoData = {
+  ecoScore: ŚREDNIA(wszystkie eco scores),
+  performance: ŚREDNIA(wszystkie performance scores),
+  totalBytes: ŚREDNIA(rozmiary stron),
+  bootupTime: ŚREDNIA(czasy bootup),
+  hostingGreen: 100 jeśli WSZYSTKIE strony mają green hosting, 0 inaczej,
+  imageOptimization: 100 jeśli WSZYSTKIE strony mają optymalizacje, 0 inaczej,
+  cls: ŚREDNIA(CLS wartości)
+}
+```
+
+### CLI Test
+
+Możesz przetestować funkcjonalność z linii poleceń:
+
+```bash
+node test-multi-page.js
+```
+
+Skrypt przetestuje analizę przykładowej witryny i wyświetli sformatowany raport.
+
+### Ograniczenia
+
+- Maksymalnie **10 URL-i** per żądanie
+- URLs muszą być prawidłowe (zaczynać się od `http://` lub `https://`)
+- Każda analiza trwa ~2-3 minuty w zależności od rozmiaru strony
+
+### Struktura Raportu
+
+Raporty są zapisywane z nazwą: `website-report-{domain}-{timestamp}.json`
+
+Przykład: `website-report-example-com-2025-10-24T19-21-43-886Z.json`
+
+### Rekomendacje do Poprawy
+
+Na podstawie zagregowanych wyników, system sugeruje:
+
+- Optymalizację wydajności strony
+- Zmniejszenie rozmiaru zasobów
+- Poprawę czasu ładowania
+- Przejście na green hosting
+- Optymalizację obrazów
+- Redukcję Cumulative Layout Shift

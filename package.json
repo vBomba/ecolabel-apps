@@ -55,7 +55,15 @@
   },
   "files": [
     "index.js",
+    "server.js",
+    "utils.js",
+    "public/",
+    "src/",
     "package.json",
-    "README.md"
+    "README.md",
+    "FEATURES.md",
+    "QUICK_START.md",
+    "ARCHITECTURE.md",
+    "MULTI_PAGE_ANALYSIS.md"
   ]
 }

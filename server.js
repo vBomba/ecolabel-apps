@@ -73,62 +73,98 @@ function saveAndAnalyzeReport(report, url) {
   return { ecoData, filename, report };
 }
 
+// --- Funkcja dla agregacji wyników wielu stron ---
+function aggregateEcoScores(ecoScoresArray) {
+  if (ecoScoresArray.length === 0) {
+    throw new Error("No eco scores to aggregate");
+  }
+
+  const avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+
+  return {
+    ecoScore: Math.round(avg(ecoScoresArray.map((e) => e.ecoScore))),
+    performance: avg(ecoScoresArray.map((e) => e.performance)),
+    totalBytes: avg(ecoScoresArray.map((e) => e.totalBytes)),
+    bootupTime: avg(ecoScoresArray.map((e) => e.bootupTime)),
+    hostingGreen: ecoScoresArray.every((e) => e.hostingGreen === 100) ? 100 : 0,
+    imageOptimization: ecoScoresArray.every((e) => e.imageOptimization === 100)
+      ? 100
+      : 0,
+    cls: avg(ecoScoresArray.map((e) => e.cls)),
+  };
+}
+
+// --- Określenie eco-label na podstawie wyniku ---
+function getEcoLabel(ecoScore) {
+  if (ecoScore >= 80)
+    return { grade: "A", label: "Excellent", color: "#27ae60" };
+  if (ecoScore >= 60) return { grade: "B", label: "Good", color: "#f39c12" };
+  if (ecoScore >= 40) return { grade: "C", label: "Fair", color: "#e74c3c" };
+  if (ecoScore >= 20) return { grade: "D", label: "Poor", color: "#c0392b" };
+  return { grade: "F", label: "Critical", color: "#8b0000" };
+}
+
 // --- Główna funkcja analizy ---
 async function runLighthouseWithCookieHandling(url) {
   console.log(`\n🔍 Analizuję ${url} ...`);
 
-  const browserPath = getBrowserPath();
-  const browser = await puppeteer.launch({
-    executablePath: browserPath,
-    headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-web-security",
-      "--disable-features=VizDisplayCompositor",
-      "--window-size=1920,1080",
-      "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
-      "--no-proxy-server",
-      "--proxy-bypass-list=*",
-      "--disable-proxy-certificate-handler",
-      "--disable-default-apps",
-      "--disable-extensions",
-      "--disable-plugins",
-    ],
-  });
-
-  const page = await browser.newPage();
-
   try {
-    // Ustawienie viewport dla desktop
-    await page.setViewport({ width: 1920, height: 1080 });
+    const browserPath = getBrowserPath();
+    const browser = await puppeteer.launch({
+      executablePath: browserPath,
+      headless: true,
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-web-security",
+        "--disable-features=VizDisplayCompositor",
+        "--window-size=1920,1080",
+        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+        "--no-proxy-server",
+        "--proxy-bypass-list=*",
+        "--disable-proxy-certificate-handler",
+        "--disable-default-apps",
+        "--disable-extensions",
+        "--disable-plugins",
+      ],
+    });
 
-    // Przejście na stronę
-    console.log("📄 Ładowanie strony...");
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+    const page = await browser.newPage();
 
-    // Oczekiwanie na załadowanie dynamicznej zawartości
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    try {
+      // Ustaw widok dla pulpitu
+      await page.setViewport({ width: 1920, height: 1080 });
 
-    // Obsługa zgód na cookies tymczasowo wyłączona
-    console.log("🍪 Obsługa zgód na cookies tymczasowo wyłączona");
+      // Przejśćdo strony
+      console.log("📄 Ładowanie strony...");
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
 
-    console.log("🚀 Uruchamianie analizy Lighthouse...");
+      // Oczekiwanie na dynamiczną zawartość
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    // Uruchomienie Lighthouse za pomocą API
-    const options = {
-      logLevel: "info",
-      output: "json",
-      onlyCategories: ["performance"],
-      port: new URL(browser.wsEndpoint()).port,
-    };
+      // Obsługa zgód na pliki cookie tymczasowo wyłączona
+      console.log("🍪 Obsługa zgód na pliki cookie tymczasowo wyłączona");
 
-    const runnerResult = await lighthouse(url, options);
+      console.log("🚀 Uruchamianie analizy Lighthouse...");
 
-    // Zapisywanie i analiza raportu
-    return saveAndAnalyzeReport(runnerResult.lhr, url);
-  } finally {
-    await browser.close();
+      // Uruchomienie Lighthouse za pomocą API
+      const options = {
+        logLevel: "info",
+        output: "json",
+        onlyCategories: ["performance"],
+        port: new URL(browser.wsEndpoint()).port,
+      };
+
+      const runnerResult = await lighthouse(url, options);
+
+      // Zapisywanie i analiza raportu
+      return saveAndAnalyzeReport(runnerResult.lhr, url);
+    } finally {
+      await browser.close();
+    }
+  } catch (error) {
+    console.error(`❌ Błąd analizy dla ${url}: ${error.message}`);
+    throw error;
   }
 }
 
@@ -156,6 +192,112 @@ app.post("/api/analyze", async (req, res) => {
     });
   } catch (error) {
     console.error("Analysis error:", error);
+    res.status(500).json({
+      error: "Analysis failed",
+      message: error.message,
+    });
+  }
+});
+
+app.post("/api/analyze-multiple", async (req, res) => {
+  try {
+    const { urls } = req.body;
+
+    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+      return res.status(400).json({
+        error: "urls array is required and must contain at least one URL",
+      });
+    }
+
+    if (urls.length > 10) {
+      return res.status(400).json({
+        error: "Maximum 10 URLs per request",
+      });
+    }
+
+    console.log(`🔍 Starting analysis for ${urls.length} pages...`);
+
+    const results = [];
+    const errors = [];
+
+    // Analizujemy każdą stronę sekwencyjnie
+    for (let i = 0; i < urls.length; i++) {
+      const url = urls[i];
+      console.log(`⏳ Analyzing ${i + 1}/${urls.length}: ${url}`);
+
+      try {
+        const result = await runLighthouseWithCookieHandling(url);
+        results.push({
+          url,
+          ...result,
+          ecoData: result.ecoData,
+        });
+      } catch (error) {
+        console.error(`❌ Error analyzing ${url}: ${error.message}`);
+        errors.push({
+          url,
+          error: error.message,
+        });
+      }
+    }
+
+    if (results.length === 0) {
+      return res.status(500).json({
+        error: "Failed to analyze any URLs",
+        errors,
+      });
+    }
+
+    // Agregujemy wyniki
+    try {
+      const ecoScoresArray = results.map((r) => r.ecoData);
+      const aggregatedEcoData = aggregateEcoScores(ecoScoresArray);
+      const ecoLabel = getEcoLabel(aggregatedEcoData.ecoScore);
+
+      // Zbieramy informacje o domenie
+      const domain = new URL(urls[0]).hostname;
+      const websiteReport = {
+        domain,
+        analyzedPages: urls.length,
+        successfulAnalyses: results.length,
+        failedAnalyses: errors.length,
+        analyzedAt: new Date().toISOString(),
+        aggregatedEcoData,
+        ecoLabel,
+        pages: results,
+        errors: errors.length > 0 ? errors : undefined,
+      };
+
+      // Zapisujemy złączony raport
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const domainForFile = domain.replace(/\./g, "-");
+      const websiteReportFilename = `website-report-${domainForFile}-${timestamp}.json`;
+      const websiteReportPath = path.join("reports", websiteReportFilename);
+
+      if (!fs.existsSync("reports")) {
+        fs.mkdirSync("reports");
+      }
+
+      fs.writeFileSync(
+        websiteReportPath,
+        JSON.stringify(websiteReport, null, 2)
+      );
+      console.log(`📄 Raport witryny zapisany: ${websiteReportPath}`);
+
+      res.json({
+        success: true,
+        ...websiteReport,
+      });
+    } catch (aggregationError) {
+      console.error("Error during result aggregation:", aggregationError);
+      res.status(500).json({
+        error: "Failed to aggregate results",
+        message: aggregationError.message,
+        partialResults: results,
+      });
+    }
+  } catch (error) {
+    console.error("Multi-page analysis error:", error);
     res.status(500).json({
       error: "Analysis failed",
       message: error.message,
@@ -209,27 +351,88 @@ app.get("/api/reports/:filename", (req, res) => {
   }
 });
 
+app.get("/api/website-reports", (req, res) => {
+  try {
+    const reportsDir = path.join(__dirname, "reports");
+
+    if (!fs.existsSync(reportsDir)) {
+      return res.json([]);
+    }
+
+    const files = fs
+      .readdirSync(reportsDir)
+      .filter(
+        (file) => file.startsWith("website-report-") && file.endsWith(".json")
+      )
+      .map((file) => {
+        const filePath = path.join(reportsDir, file);
+        const stats = fs.statSync(filePath);
+        const content = JSON.parse(fs.readFileSync(filePath, "utf8"));
+
+        return {
+          filename: file,
+          domain: content.domain,
+          ecoScore: content.aggregatedEcoData.ecoScore,
+          ecoLabel: content.ecoLabel,
+          analyzedPages: content.analyzedPages,
+          createdAt: stats.birthtime,
+        };
+      })
+      .sort((a, b) => b.createdAt - a.createdAt);
+
+    res.json(files);
+  } catch (error) {
+    console.error("Error fetching website reports:", error);
+    res.status(500).json({ error: "Failed to fetch website reports" });
+  }
+});
+
+app.get("/api/website-reports/:filename", (req, res) => {
+  try {
+    const { filename } = req.params;
+    const filePath = path.join(__dirname, "reports", filename);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: "Report not found" });
+    }
+
+    const report = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    res.json(report);
+  } catch (error) {
+    console.error("Error fetching website report:", error);
+    res.status(500).json({ error: "Failed to fetch website report" });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
+  console.error("🔴 Nieobsługiwany błąd:");
   console.error(err.stack);
-  res.status(500).json({ error: "Something went wrong!" });
+  console.error("Wiadomość:", err.message);
+  res.status(500).json({
+    error: "Something went wrong!",
+    details: err.message,
+    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+  });
 });
 
 // Start server with error handling for port conflicts
 const server = app.listen(PORT, () => {
-  console.log(`🌍 EcoLabel Server running on http://localhost:${PORT}`);
-  console.log(`📊 API available at http://localhost:${PORT}/api`);
-  console.log(`🌱 Ready to analyze websites!`);
+  console.log(`🌍 Serwer EcoLabel uruchomiony na http://localhost:${PORT}`);
+  console.log(`📊 API dostępne na http://localhost:${PORT}/api`);
+  console.log(`🌱 Gotowy do analizy stron!`);
 });
 
 server.on("error", (err) => {
   if (err.code === "EADDRINUSE") {
-    console.error(`❌ Port ${PORT} is already in use`);
-    console.log(`Trying port ${PORT + 1}...`);
+    console.error(`❌ Port ${PORT} jest już w użytku`);
+    console.log(`Próbuję port ${PORT + 1}...`);
     app.listen(PORT + 1, () => {
-      console.log(`🌍 EcoLabel Server running on http://localhost:${PORT + 1}`);
-      console.log(`📊 API available at http://localhost:${PORT + 1}/api`);
-      console.log(`🌱 Ready to analyze websites!`);
+      console.log(
+        `🌍 Serwer EcoLabel uruchomiony na http://localhost:${PORT + 1}`
+      );
+      console.log(`📊 API dostępne na http://localhost:${PORT + 1}/api`);
+      console.log(`🌱 Gotowy do analizy stron!`);
     });
   } else {
     console.error(err);

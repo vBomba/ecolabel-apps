@@ -82,7 +82,7 @@ async function runLighthouseWithCookieHandling(url) {
       "--disable-web-security",
       "--disable-features=VizDisplayCompositor",
       "--window-size=1920,1080",
-      "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
       "--no-proxy-server",
       "--proxy-bypass-list=*",
       "--disable-proxy-certificate-handler",

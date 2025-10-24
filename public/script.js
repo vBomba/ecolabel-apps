@@ -8,6 +8,7 @@ const errorSection = document.getElementById("error-section");
 // --- Elementy paska postępu ---
 const progressFill = document.getElementById("progress-fill");
 const progressText = document.getElementById("progress-text");
+const progressSteps = document.querySelector(".progress-steps");
 const steps = {
   loading: document.getElementById("step-loading"),
   lighthouse: document.getElementById("step-lighthouse"),
@@ -43,6 +44,10 @@ const retryBtn = document.getElementById("retry-btn");
 // --- Stan ---
 let currentAnalysisId = null;
 let currentReport = null;
+let analysisStartTime = null;
+let analysisTimerInterval = null;
+let progressTextUpdateInterval = null;
+let currentProgressMessage = "";
 
 // --- Słuchacze zdarzeń ---
 analyzeBtn.addEventListener("click", startAnalysis);
@@ -108,8 +113,24 @@ async function startAnalysis() {
 // --- Przeprowadź właściwą analizę ---
 async function performAnalysis(url) {
   try {
+    // Start timer
+    analysisStartTime = Date.now();
+    let elapsedSeconds = 0;
+
+    // Update timer every 100ms for smooth updates
+    analysisTimerInterval = setInterval(() => {
+      elapsedSeconds = Math.floor((Date.now() - analysisStartTime) / 1000);
+    }, 100);
+
+    // Update progress text display with timer every 100ms for real-time updates
+    progressTextUpdateInterval = setInterval(() => {
+      if (currentProgressMessage) {
+        progressText.textContent = `${currentProgressMessage} (${elapsedSeconds}s)`;
+      }
+    }, 100);
+
     // Etap 1: Ładowanie strony
-    updateProgress(0, "Ładowanie strony...", "loading");
+    updateProgress(5, `Ładowanie strony... (${elapsedSeconds}s)`, "loading");
 
     const response = await fetch("/api/analyze", {
       method: "POST",
@@ -124,35 +145,45 @@ async function performAnalysis(url) {
     }
 
     // Etap 2: Analiza Lighthouse
-    updateProgress(25, "Uruchamianie analizy Lighthouse...", "lighthouse");
+    updateProgress(
+      30,
+      `Uruchamianie analizy Lighthouse... (${elapsedSeconds}s)`,
+      "lighthouse"
+    );
 
-    // Symuluj aktualizacje postępu
-    const progressInterval = setInterval(() => {
-      const currentProgress = parseInt(progressFill.style.width) || 25;
-      if (currentProgress < 75) {
-        updateProgress(currentProgress + 5, "Analiza w toku...", "lighthouse");
-      }
-    }, 1000);
-
-    // Etap 3: Obliczanie EcoScore
-    updateProgress(75, "Obliczanie EcoScore...", "analysis");
-
+    // Wait for the API response
     const result = await response.json();
 
-    clearInterval(progressInterval);
+    elapsedSeconds = Math.floor((Date.now() - analysisStartTime) / 1000);
+    updateProgress(
+      90,
+      `Obliczanie EcoScore... (${elapsedSeconds}s)`,
+      "analysis"
+    );
+
+    // Clear all intervals
+    clearInterval(analysisTimerInterval);
+    clearInterval(progressTextUpdateInterval);
 
     // Etap 4: Complete
-    updateProgress(100, "Analiza zakończona!", "complete");
+    elapsedSeconds = Math.floor((Date.now() - analysisStartTime) / 1000);
+    updateProgress(100, `Analiza zakończona! (${elapsedSeconds}s)`, "complete");
 
     // Store results
     currentReport = result;
     currentAnalysisId = result.filename;
+
+    // Clear all intervals
+    clearInterval(analysisTimerInterval);
+    clearInterval(progressTextUpdateInterval);
 
     // Show results after a short delay
     setTimeout(() => {
       showResults(result);
     }, 1000);
   } catch (error) {
+    clearInterval(analysisTimerInterval);
+    clearInterval(progressTextUpdateInterval);
     throw new Error(`Błąd podczas analizy: ${error.message}`);
   }
 }
@@ -160,6 +191,9 @@ async function performAnalysis(url) {
 // --- Zaktualizuj pasek postępu ---
 function updateProgress(percentage, text, activeStep) {
   progressFill.style.width = `${percentage}%`;
+
+  // Extract message without the time part (remove anything like "(Xs)")
+  currentProgressMessage = text.replace(/ \(\d+s\)$/, "");
   progressText.textContent = text;
 
   // Zaktualizuj stany kroków
@@ -218,7 +252,18 @@ function showResults(result) {
   // Update score circle animation
   setTimeout(() => {
     const percentage = (ecoScore / 100) * 360;
-    scoreCircle.style.background = `conic-gradient(#4CAF50 0deg, #4CAF50 ${percentage}deg, #e0e0e0 ${percentage}deg)`;
+
+    // Get color based on grade for dynamic gradient
+    const gradeColors = {
+      A: "#00d084", // Green
+      B: "#00c080", // Lighter green
+      C: "#ffa500", // Orange
+      D: "#ff8a50", // Orange-red
+      F: "#ff6b6b", // Red
+    };
+
+    const fillColor = gradeColors[grade] || "#4CAF50";
+    scoreCircle.style.background = `conic-gradient(${fillColor} 0deg, ${fillColor} ${percentage}deg, #e0e0e0 ${percentage}deg)`;
   }, 100);
 }
 
@@ -308,6 +353,10 @@ function showError(message) {
 function showProgress() {
   hideAllSections();
   progressSection.classList.remove("hidden");
+  // Trigger animation when showing progress
+  setTimeout(() => {
+    progressSection.classList.add("animate");
+  }, 10);
 }
 
 // --- Ukryj wszystkie sekcje ---
@@ -319,10 +368,41 @@ function hideAllSections() {
 
 // --- Resetuj postęp ---
 function resetProgress() {
+  // Clear any existing timers
+  if (analysisTimerInterval) {
+    clearInterval(analysisTimerInterval);
+    analysisTimerInterval = null;
+  }
+  if (progressTextUpdateInterval) {
+    clearInterval(progressTextUpdateInterval);
+    progressTextUpdateInterval = null;
+  }
+
   progressFill.style.width = "0%";
   progressText.textContent = "Przygotowywanie do analizy...";
+
+  // Remove animate from progress steps
+  if (progressSteps) {
+    progressSteps.classList.remove("animate");
+  }
+
   Object.values(steps).forEach((step) => {
-    step.classList.remove("active", "completed");
+    step.classList.remove("active", "completed", "animate");
+  });
+
+  // Add animate class to progress steps
+  if (progressSteps) {
+    setTimeout(() => {
+      progressSteps.classList.add("animate");
+    }, 30);
+  }
+
+  // Add staggered animations to steps
+  const stepArray = Object.values(steps);
+  stepArray.forEach((step, index) => {
+    setTimeout(() => {
+      step.classList.add("animate");
+    }, 50 + index * 100);
   });
 }
 

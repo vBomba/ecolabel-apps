@@ -1,7 +1,8 @@
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
 import lighthouse from "lighthouse";
 import fs from "fs";
 import path from "path";
+import { getBrowserPath } from "./utils.js";
 
 // --- Obliczanie EcoScore ---
 function normalizeScore(value, min, max) {
@@ -72,6 +73,7 @@ async function runLighthouseWithCookieHandling(url) {
   console.log(`\n🔍 Analizuję ${url} ...`);
 
   const browser = await puppeteer.launch({
+    executablePath: getBrowserPath(),
     headless: true,
     args: [
       "--no-sandbox",

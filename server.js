@@ -1,10 +1,11 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
 import lighthouse from "lighthouse";
 import fs from "fs";
 import cors from "cors";
+import { getBrowserPath } from "./utils.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -77,6 +78,7 @@ async function runLighthouseWithCookieHandling(url) {
   console.log(`\n🔍 Analizuję ${url} ...`);
 
   const browser = await puppeteer.launch({
+    executablePath: getBrowserPath(),
     headless: true,
     args: [
       "--no-sandbox",
@@ -214,4 +216,3 @@ app.listen(PORT, () => {
 });
 
 export default app;
-

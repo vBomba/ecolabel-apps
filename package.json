@@ -30,7 +30,7 @@
   "author": "vBomba",
   "license": "MIT",
   "dependencies": {
-    "puppeteer": "^24.26.1",
+    "puppeteer-core": "^24.26.1",
     "lighthouse": "^12.8.2",
     "express": "^4.18.2",
     "cors": "^2.8.5"

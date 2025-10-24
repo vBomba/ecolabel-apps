@@ -10,19 +10,42 @@ Nowoczesny interfejs webowy do analizy ekologiczności stron internetowych wykor
 npm install
 ```
 
-### 2. Kompilacja stylów SCSS
+### 2. ⚙️ Konfiguracja na Windowsie
+
+Projekt używa `puppeteer-core`, co oznacza, że musisz zainstalować Chrome lub Chromium oddzielnie:
+
+**Opcja A: Google Chrome (rekomendowane)**
+
+1. Pobierz ze strony: https://www.google.com/chrome
+2. Zainstaluj w domyślnym miejscu: `C:\Program Files\Google\Chrome\Application\chrome.exe`
+3. Aplikacja automatycznie znajdzie Chrome
+
+**Opcja B: Chromium (darmowe)**
+
+1. Pobierz ze strony: https://www.chromium.org/getting-involved/download-chromium
+2. Rozpakuj do: `C:\Program Files\Chromium\Application\`
+3. Aplikacja automatycznie znajdzie Chromium
+
+**Opcja C: Własna ścieżka**
+Ustaw zmienną środowiskową (jeśli Chrome jest zainstalowany w innym miejscu):
+
+```bash
+set CHROME_PATH=C:\path\to\chrome.exe
+```
+
+### 3. Kompilacja stylów SCSS
 
 ```bash
 npm run build-css-once
 ```
 
-### 3. Uruchomienie serwera webowego
+### 4. Uruchomienie serwera webowego
 
 ```bash
 npm start
 ```
 
-### 4. Otwarcie w przeglądarce
+### 5. Otwarcie w przeglądarce
 
 Przejdź na http://localhost:3000
 
@@ -59,7 +82,7 @@ Przejdź na http://localhost:3000
 
 - **Node.js** - platforma serwerowa
 - **Express.js** - framework webowy
-- **Puppeteer** - automatyzacja przeglądarki
+- **Puppeteer Core** - automatyzacja przeglądarki (wymaga oddzielnej instalacji Chrome/Chromium)
 - **Lighthouse** - analiza wydajności
 
 ## 📁 Struktura projektu

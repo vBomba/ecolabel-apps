@@ -25,7 +25,7 @@ $energy-colors: (
   // Żółty
   E: #ff9800,
   // Pomarańczowy
-  F: #ff5722 // Czerwony,,,,,,,,,,,
+  F: #ff5722 // Czerwony,,,,,,,,,,,,,
 );
 
 // Reset i podstawowe style
@@ -651,25 +651,19 @@ body {
 
 // Sekcja emisji CO2
 .co2-section {
-  background: linear-gradient(135deg, rgba(0, 208, 132, 0.1) 0%, rgba(0, 156, 40, 0.15) 100%);
+  background: $gray-50;
   padding: $spacing-xl;
   border-radius: $border-radius-lg;
-  border: 2px solid rgba(0, 208, 132, 0.3);
+  border: 1px solid $gray-300;
   margin: $spacing-xxl 0;
-  backdrop-filter: blur(10px);
 
   h4 {
     @include heading-4;
     margin-bottom: $spacing-lg;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    gap: $spacing-sm;
-    
-    &::before {
-      content: "🌍";
-      font-size: 1.5rem;
-    }
+    color: $primary-color;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-size: $font-size-base;
   }
 
   .co2-grid {
@@ -680,36 +674,27 @@ body {
   }
 
   .co2-card {
-    background: rgba(255, 255, 255, 0.08);
+    background: $secondary-color;
     padding: $spacing-lg;
     border-radius: $border-radius-md;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.12);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(0, 208, 132, 0.2);
-    }
+    border: 1px solid $gray-300;
 
     > div:first-child {
-      color: rgba(255, 255, 255, 0.8);
+      color: $gray-600;
       font-size: $font-size-sm;
       margin-bottom: $spacing-sm;
-      font-weight: 500;
+      font-weight: $font-weight-medium;
     }
 
     > div:last-child {
-      font-size: 1.5rem;
+      font-size: $font-size-xxl;
       font-weight: $font-weight-bold;
-      color: #00d084;
-      text-shadow: 0 2px 8px rgba(0, 208, 132, 0.3);
+      color: $accent-color;
     }
   }
 
   > p:last-child {
-    color: rgba(255, 255, 255, 0.6);
+    color: $gray-600;
     font-size: $font-size-sm;
     margin-top: $spacing-md;
     font-style: italic;

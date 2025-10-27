@@ -126,6 +126,7 @@
 
 // Typography mixins
 @mixin heading-1 {
+  font-family: "Ndot-Regular", sans-serif;
   font-size: $font-size-h1;
   font-weight: $font-weight-bold;
   color: $primary-color;
@@ -133,6 +134,7 @@
 }
 
 @mixin heading-2 {
+  font-family: "Ndot-Regular", sans-serif;
   font-size: $font-size-h2;
   font-weight: $font-weight-bold;
   color: $primary-color;
@@ -140,6 +142,7 @@
 }
 
 @mixin heading-3 {
+  font-family: "Ndot-Regular", sans-serif;
   font-size: $font-size-h3;
   font-weight: $font-weight-semibold;
   color: $primary-color;

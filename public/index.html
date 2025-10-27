@@ -154,6 +154,15 @@ https://www.example.com/page2"
                   <span class="score-value" id="score-value">0</span>
                   <span class="score-label">ECOSCORE</span>
                 </div>
+                <!-- Etykieta energetyczna -->
+                <div class="energy-label" id="energy-label">
+                  <div class="energy-class grade-A">A</div>
+                  <div class="energy-class grade-B">B</div>
+                  <div class="energy-class grade-C">C</div>
+                  <div class="energy-class grade-D">D</div>
+                  <div class="energy-class grade-E">E</div>
+                  <div class="energy-class grade-F">F</div>
+                </div>
                 <div class="score-grade" id="score-grade">F</div>
               </div>
               <div class="score-description" id="score-description">
@@ -288,14 +297,12 @@ https://www.example.com/page2"
                 rows="8"
               ></textarea>
 
-              <button class="btn-run-tests" onclick="loadResults()">
-                Uruchom testy
-              </button>
               <button
-                class="btn-secondary"
-                onclick="clearPerformanceTextarea()"
+                class="btn-run-tests analyze-multi"
+                onclick="loadResults()"
               >
-                Wyczyść
+                <i class="icon icon-chart-line"></i>
+                Uruchom testy
               </button>
             </div>
 

@@ -21,12 +21,41 @@ class Config {
 
       options.addArguments("--no-sandbox");
       options.addArguments("--disable-dev-shm-usage");
-      options.addArguments("--enable-gpu");
-      options.addArguments("--enable-gpu-rasterization");
-      options.addArguments("--enable-features=VaapiVideoDecoder");
-      options.addArguments("--disable-software-rasterizer");
+      options.addArguments("--disable-gpu");
+      options.addArguments("--disable-background-networking");
+      options.addArguments("--disable-background-timer-throttling");
+      options.addArguments("--disable-backgrounding-occluded-windows");
+      options.addArguments("--disable-breakpad");
+      options.addArguments("--disable-client-side-phishing-detection");
+      options.addArguments("--disable-component-update");
+      options.addArguments("--disable-default-apps");
+      options.addArguments("--disable-features=TranslateUI");
+      options.addArguments("--disable-hang-monitor");
+      options.addArguments("--disable-ipc-flooding-protection");
+      options.addArguments("--disable-popup-blocking");
+      options.addArguments("--disable-prompt-on-repost");
+      options.addArguments("--disable-renderer-backgrounding");
+      options.addArguments("--disable-sync");
+      options.addArguments("--disable-translate");
+      options.addArguments("--metrics-recording-only");
+      options.addArguments("--mute-audio");
+      options.addArguments("--no-first-run");
+      options.addArguments("--safebrowsing-disable-auto-update");
+      options.addArguments("--enable-automation");
+      options.addArguments("--password-store=basic");
+      options.addArguments("--use-mock-keychain");
       options.addArguments("--enable-memory-info");
-      options.addArguments("--enable-logging", "--v=1");
+      options.addArguments("--disable-infobars");
+      options.addArguments("--disable-logging");
+      options.addArguments("--hide-scrollbars");
+      options.addArguments("--disable-extensions");
+      options.addArguments("--disable-plugins-discovery");
+      options.addArguments(
+        "--disable-component-extensions-with-background-pages"
+      );
+      options.addArguments("--disable-extensions-file-access-check");
+      options.addArguments("--disable-gcm");
+      options.addArguments("--disable-service-worker-autostart");
 
       this.driver = await new Builder()
         .forBrowser("chrome")

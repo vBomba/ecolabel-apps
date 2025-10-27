@@ -255,6 +255,21 @@ function showResults(result) {
   scoreGrade.className = `grade-${grade}`;
   scoreCircle.className = `score-circle grade-${grade}`;
 
+  // Podświetl odpowiednią klasę w etykiecie energetycznej
+  const energyLabel = document.getElementById("energy-label");
+  if (energyLabel) {
+    energyLabel.querySelectorAll(".energy-class").forEach((el) => {
+      el.classList.remove("active");
+    });
+    const activeClass = energyLabel.querySelector(`.grade-${grade}`);
+    if (activeClass) {
+      activeClass.classList.add("active");
+      // Podkreśl aktywną klasę
+      activeClass.style.transform = "scale(1.1)";
+      activeClass.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.2)";
+    }
+  }
+
   // Update score description
   scoreDescription.textContent = getScoreDescription(ecoScore, grade);
 
@@ -265,6 +280,50 @@ function showResults(result) {
   hostingValue.textContent = result.ecoData.hostingGreen ? "Tak" : "Nie";
   imagesValue.textContent = result.ecoData.imageOptimization ? "Tak" : "Nie";
   clsValue.textContent = result.ecoData.cls.toFixed(3);
+
+  // Apply color coding to metric cards
+  applyMetricColor(
+    performanceValue.closest(".metric-card"),
+    result.ecoData.performance,
+    true,
+    0,
+    100
+  );
+  applyMetricColor(
+    sizeValue.closest(".metric-card"),
+    result.ecoData.totalBytes,
+    false,
+    0,
+    2000000
+  ); // 2MB max
+  applyMetricColor(
+    bootupValue.closest(".metric-card"),
+    result.ecoData.bootupTime,
+    false,
+    0,
+    2000
+  ); // 2s max
+  applyMetricColor(
+    hostingValue.closest(".metric-card"),
+    result.ecoData.hostingGreen ? 100 : 0,
+    true,
+    0,
+    100
+  );
+  applyMetricColor(
+    imagesValue.closest(".metric-card"),
+    result.ecoData.imageOptimization ? 100 : 0,
+    true,
+    0,
+    100
+  );
+  applyMetricColor(
+    clsValue.closest(".metric-card"),
+    result.ecoData.cls,
+    false,
+    0,
+    0.25
+  ); // CLS: lower is better
 
   // Update recommendations
   updateRecommendations(result.ecoData);
@@ -360,6 +419,45 @@ function getScoreDescription(score, grade) {
     F: "Krytycznie. Twoja strona wymaga radykalnych poprawek ekologiczności",
   };
   return descriptions[grade] || "Nieokreślone";
+}
+
+// --- Funkcja do kolorowania metryk na podstawie wartości ---
+function applyMetricColor(card, value, higherIsBetter, min, max) {
+  if (!card) return;
+
+  // Normalizuj wartość do 0-100
+  let normalizedValue;
+  if (higherIsBetter) {
+    normalizedValue = ((value - min) / (max - min)) * 100;
+  } else {
+    // dla wartości gdzie mniejsze jest lepsze (np. CLS, bootup time)
+    normalizedValue = ((max - value) / (max - min)) * 100;
+  }
+
+  // Ogranicz do 0-100
+  normalizedValue = Math.max(0, Math.min(100, normalizedValue));
+
+  // Określ kolor na podstawie znormalizowanej wartości
+  let color;
+  if (normalizedValue >= 80) {
+    color = "#00852e"; // A - ciemna zieleń
+  } else if (normalizedValue >= 60) {
+    color = "#6cae3a"; // B - jasna zieleń
+  } else if (normalizedValue >= 40) {
+    color = "#b0cc33"; // C - żółto-zielony
+  } else if (normalizedValue >= 20) {
+    color = "#fdd835"; // D - żółty
+  } else if (normalizedValue >= 10) {
+    color = "#ff9800"; // E - pomarańczowy
+  } else {
+    color = "#ff5722"; // F - czerwony
+  }
+
+  // Zastosuj kolor do ikony metryki
+  const icon = card.querySelector(".metric-icon");
+  if (icon) {
+    icon.style.background = color;
+  }
 }
 
 // --- Pokaż błąd ---

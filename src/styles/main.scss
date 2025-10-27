@@ -2,6 +2,32 @@
 @import "mixins";
 @import "icons";
 
+// Import Ndot-Regular font
+@font-face {
+  font-family: "Ndot-Regular";
+  src: url("../fonts/Ndot-Regular.woff2") format("woff2"),
+    url("../fonts/Ndot-Regular.woff") format("woff"),
+    url("../fonts/Ndot-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+// Wspólna mapa kolorów energetycznych (dla score-circle i energy-label)
+$energy-colors: (
+  A: #00852e,
+  // Ciemna zieleń
+  B: #6cae3a,
+  // Jasna zieleń
+  C: #b0cc33,
+  // Żółto-zielony
+  D: #fdd835,
+  // Żółty
+  E: #ff9800,
+  // Pomarańczowy
+  F: #ff5722 // Czerwony,,,,,,,,,,
+);
+
 // Reset i podstawowe style
 * {
   margin: 0;
@@ -88,6 +114,7 @@ body {
   @include card-base;
   border: 1px solid $gray-300;
   @include fade-in(0.8s);
+  margin-bottom: 1rem;
 }
 
 .input-group {
@@ -168,10 +195,17 @@ body {
 
 .analyze-multi {
   align-self: flex-end;
+  @include button-primary;
+  min-width: 160px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: $font-size-sm;
+  margin-left: auto;
 
   @include mobile {
     align-self: stretch;
     width: 100%;
+    margin-left: 0;
   }
 }
 
@@ -235,7 +269,11 @@ body {
     background: $accent-color;
     color: $secondary-color;
     border-color: $accent-color;
-    animation: scale-in 0.3s ease-out;
+    animation: stepScaleIn 0.3s ease-out;
+  }
+
+  &.active .icon-spinner {
+    animation: spin 1s linear infinite !important;
   }
 
   &.completed .icon {
@@ -271,8 +309,36 @@ body {
   height: 100%;
   background: $accent-color;
   width: 0%;
-  transition: width 5s ease-in-out;
+  transition: width 0.3s ease-in-out;
   box-shadow: 0 0 8px rgba(0, 208, 132, 0.3);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .progress-text {
@@ -332,6 +398,63 @@ body {
   @include mobile {
     @include flex-column;
     gap: $spacing-xl;
+  }
+}
+
+// Etykieta energetyczna (jak na urządzeniach AGD)
+.energy-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 2px;
+  background: $gray-50;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius-md;
+  min-width: 50px;
+
+  .energy-class {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-xs $spacing-sm;
+    font-weight: $font-weight-bold;
+    font-size: $font-size-base;
+    color: white;
+    min-width: 40px;
+    border-radius: $border-radius-sm;
+    transition: all $transition-fast;
+
+    // Kolory jak na etykiecie energetycznej (używamy tej samej mapy co score-circle)
+    &.grade-A {
+      background: map-get($energy-colors, A);
+    }
+
+    &.grade-B {
+      background: map-get($energy-colors, B);
+    }
+
+    &.grade-C {
+      background: map-get($energy-colors, C);
+    }
+
+    &.grade-D {
+      background: map-get($energy-colors, D);
+    }
+
+    &.grade-E {
+      background: map-get($energy-colors, E);
+    }
+
+    &.grade-F {
+      background: map-get($energy-colors, F);
+    }
+
+    // Aktywna klasa (wyróżniona)
+    &.active {
+      transform: scale(1.1);
+      // box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      // border: 2px solid $primary-color;
+    }
   }
 }
 
@@ -409,7 +532,6 @@ body {
   position: relative;
 
   &:hover {
-    border-color: $accent-color;
     box-shadow: 0 4px 16px rgba(0, 208, 132, 0.1);
   }
 
@@ -419,7 +541,7 @@ body {
     opacity: 0;
     position: absolute;
     z-index: 1;
-    bottom: 125%;
+    bottom: 105%;
     left: 50%;
     transform: translateX(-50%);
     background: $primary-color;
@@ -439,7 +561,7 @@ body {
     opacity: 0;
     position: absolute;
     z-index: 1;
-    bottom: 120%;
+    bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
     border: 5px solid transparent;
@@ -458,7 +580,7 @@ body {
   width: 45px;
   height: 45px;
   border-radius: $border-radius-md;
-  background: $accent-color;
+  background: $primary-color;
   @include flex-center;
   color: $secondary-color;
   font-size: $font-size-lg;
@@ -586,52 +708,44 @@ body {
   display: none !important;
 }
 
-// Kolory ocen - Nothing style
-.grade-A {
-  color: $accent-color !important;
-}
+// Kolory kółek wyników na podstawie oceny (takie same jak energy-label)
 
-.grade-B {
-  color: #00c080 !important;
-}
-
-.grade-C {
-  color: #ffa500 !important;
-}
-
-.grade-D {
-  color: #ff8a50 !important;
-}
-
-.grade-F {
-  color: $danger-color !important;
-}
-
-// Kolory kółek wyników na podstawie oceny
 .score-circle.grade-A {
   background: conic-gradient(
-    $accent-color 0deg,
-    $accent-color 360deg,
+    map-get($energy-colors, A) 0deg,
+    map-get($energy-colors, A) 360deg,
     $gray-300 360deg
   );
 }
 
 .score-circle.grade-B {
-  background: conic-gradient(#00c080 0deg, #00c080 360deg, $gray-300 360deg);
+  background: conic-gradient(
+    map-get($energy-colors, B) 0deg,
+    map-get($energy-colors, B) 360deg,
+    $gray-300 360deg
+  );
 }
 
 .score-circle.grade-C {
-  background: conic-gradient(#ffa500 0deg, #ffa500 360deg, $gray-300 360deg);
+  background: conic-gradient(
+    map-get($energy-colors, C) 0deg,
+    map-get($energy-colors, C) 360deg,
+    $gray-300 360deg
+  );
 }
 
 .score-circle.grade-D {
-  background: conic-gradient(#ff8a50 0deg, #ff8a50 360deg, $gray-300 360deg);
+  background: conic-gradient(
+    map-get($energy-colors, D) 0deg,
+    map-get($energy-colors, D) 360deg,
+    $gray-300 360deg
+  );
 }
 
 .score-circle.grade-F {
   background: conic-gradient(
-    $danger-color 0deg,
-    $danger-color 360deg,
+    map-get($energy-colors, F) 0deg,
+    map-get($energy-colors, F) 360deg,
     $gray-300 360deg
   );
 }
@@ -672,6 +786,17 @@ body {
   from {
     opacity: 0;
     transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes stepScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
   }
   to {
     opacity: 1;
@@ -942,20 +1067,7 @@ body {
   }
 }
 
-// Step animations
-.step {
-  &.animate {
-    animation: fadeIn 0.4s ease-out;
-  }
-
-  &.active {
-    animation: scaleIn 0.3s ease-out;
-  }
-
-  &.completed {
-    animation: slideInRight 0.3s ease-out;
-  }
-}
+// Step animations (removed duplicate - already handled above)
 
 // Tabs Navigation
 .tabs {
@@ -1117,12 +1229,13 @@ body {
 }
 
 .btn-run-tests {
-  @include button-primary;
-  font-size: $font-size-base;
-  min-width: 140px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin: $spacing-sm;
+  align-self: flex-end;
+  margin-left: auto;
+
+  @include mobile {
+    align-self: stretch;
+    margin-left: 0;
+  }
 
   &:disabled {
     opacity: 0.5;

@@ -1,5 +1,5 @@
 import { Builder } from "selenium-webdriver";
-import chrome from "selenium-webdriver/chrome.js";
+import { Options as ChromeOptions } from "selenium-webdriver/chrome.js";
 import { getBrowserPath } from "../utils.js";
 
 class Config {
@@ -11,7 +11,7 @@ class Config {
     }
 
     try {
-      const options = new chrome.Options();
+      const options = new ChromeOptions();
 
       // Ustaw ścieżkę do Chrome
       const browserPath = getBrowserPath();
@@ -32,9 +32,6 @@ class Config {
         .forBrowser("chrome")
         .setChromeOptions(options)
         .build();
-
-      // Włącz domenę Performance w Chrome DevTools
-      const cdp = await this.driver.createCDPConnection("page");
 
       return this.driver;
     } catch (error) {

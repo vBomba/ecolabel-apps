@@ -409,6 +409,7 @@ app.get("/api/website-reports/:filename", (req, res) => {
 // Endpoint testowania wydajności
 app.post("/api/run-scenarios", async (req, res) => {
   try {
+    console.log("📊 Starting performance testing scenarios...");
     const scenarios = [];
     const customUrls = req.body; // Tablica {name, url}
 
@@ -422,23 +423,45 @@ app.post("/api/run-scenarios", async (req, res) => {
             { name: "Example Contact", url: "https://www.example.com/contact" },
           ];
 
+    console.log(`🔗 Testing ${urlsToTest.length} URLs`);
+
+    // Inicjalizuj driver przed uruchomieniem scenariuszy
+    await Config.initDriver();
+
     for (const item of urlsToTest) {
+      console.log(`⏳ Creating scenario for: ${item.name}`);
       scenarios.push(new Scenario(item.name, item.url));
     }
 
     // Uruchom wszystkie scenariusze
     for (const scenario of scenarios) {
+      console.log(`▶️ Running scenario: ${scenario.name}`);
       await scenario.run();
     }
 
+    console.log("✅ All scenarios completed");
+
     // Zamknij sterownik
     await Config.quitDriver();
+    console.log("🔒 Driver closed");
 
     // Zwróć dane scenariuszy
     res.json(scenarios);
   } catch (error) {
-    console.error("Error running scenarios:", error);
-    res.status(500).json({ error: error.message });
+    console.error("❌ Error running scenarios:", error);
+    console.error("Stack trace:", error.stack);
+
+    // Upewnij się, że driver jest zamknięty w przypadku błędu
+    try {
+      await Config.quitDriver();
+    } catch (quitError) {
+      console.error("Error closing driver:", quitError);
+    }
+
+    res.status(500).json({
+      error: error.message,
+      details: error.stack,
+    });
   }
 });
 

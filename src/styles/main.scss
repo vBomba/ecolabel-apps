@@ -956,3 +956,199 @@ body {
     animation: slideInRight 0.3s ease-out;
   }
 }
+
+// Tabs Navigation
+.tabs {
+  @include flex-center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.tab-button {
+  @include button-base;
+  min-width: 140px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  background: transparent;
+  border: 1px solid $gray-300;
+  color: $primary-color;
+
+  &:hover {
+    background: $gray-50;
+    border-color: $primary-color;
+  }
+
+  &.active {
+    @include button-primary;
+  }
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.4s ease-out;
+
+  &.active {
+    display: block;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Performance Tab Styles
+.performance-tab-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.url-input-container {
+  @include card-base;
+  border: 1px solid $gray-300;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-xl;
+
+  h3 {
+    margin-top: 0;
+    color: $primary-color;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    margin-bottom: $spacing-md;
+  }
+
+  p {
+    color: $gray-600;
+    font-size: $font-size-sm;
+    margin-bottom: $spacing-md;
+    line-height: 1.6;
+  }
+}
+
+.url-input {
+  width: 100%;
+  padding: $spacing-md;
+  margin: $spacing-sm 0;
+  box-sizing: border-box;
+  background: $secondary-color;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius-md;
+  color: $primary-color;
+  font-size: $font-size-base;
+  font-family: monospace;
+  resize: vertical;
+  transition: all $transition-normal;
+
+  &:focus {
+    outline: none;
+    border-color: $accent-color;
+    box-shadow: 0 0 0 3px rgba(0, 208, 132, 0.1);
+  }
+
+  &::placeholder {
+    color: $gray-400;
+  }
+}
+
+.add-url-btn {
+  padding: $spacing-sm $spacing-md;
+  font-size: $font-size-sm;
+  background: $gray-200;
+  border: 1px solid $gray-300;
+  color: $primary-color;
+  border-radius: $border-radius-md;
+  cursor: pointer;
+  transition: all $transition-normal;
+  font-weight: $font-weight-medium;
+
+  &:hover {
+    background: $gray-300;
+    border-color: $gray-400;
+  }
+}
+
+.url-list {
+  margin: 1rem 0;
+}
+
+.url-item {
+  padding: $spacing-md;
+  margin: $spacing-sm 0;
+  background: $gray-50;
+  border-left: 3px solid $accent-color;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: $border-radius-md;
+  transition: all $transition-normal;
+
+  &:hover {
+    background: $gray-100;
+  }
+
+  span {
+    color: $primary-color;
+    font-size: $font-size-sm;
+  }
+
+  button {
+    padding: $spacing-xs $spacing-sm;
+    font-size: $font-size-sm;
+    background: $danger-color;
+    border: none;
+    color: $secondary-color;
+    border-radius: $border-radius-sm;
+    cursor: pointer;
+    transition: all $transition-normal;
+
+    &:hover {
+      background: darken($danger-color, 10%);
+    }
+  }
+}
+
+.btn-run-tests {
+  @include button-primary;
+  font-size: $font-size-base;
+  min-width: 140px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: $spacing-sm;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.chart-container {
+  @include card-base;
+  border: 1px solid $gray-300;
+  padding: $spacing-xl;
+  margin: $spacing-xl 0;
+  background: $secondary-color;
+
+  canvas {
+    max-height: 400px;
+    max-width: 100%;
+  }
+}
+
+// Стиль для кнопки Wyczyść в Performance Testing
+button.btn-secondary {
+  @include button-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: $font-size-base;
+  min-width: 140px;
+}

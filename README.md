@@ -58,6 +58,7 @@ Przejdź na http://localhost:3000
 - **Szczegółowe wyniki** - pełny raport z EcoScore i metrykami
 - **Rekomendacje** - konkretne porady do poprawy
 - **Pobieranie raportów** - możliwość zapisania wyników analizy
+- **Performance Testing** - test wydajności przy użyciu Selenium WebDriver i Chrome DevTools (nowa funkcjonalność!)
 
 ### 🎯 Analizowane metryki
 
@@ -132,6 +133,31 @@ Analiza strony internetowej
   "url": "https://example.com"
 }
 ```
+
+### POST /api/analyze-multiple
+
+Analiza wielu stron jednego serwisu
+
+```json
+{
+  "urls": ["https://example.com", "https://example.com/page1"]
+}
+```
+
+### POST /api/run-scenarios
+
+Performance testing z Selenium
+
+```json
+[
+  { "name": "Test 1", "url": "https://example.com" },
+  { "name": "Test 2", "url": "https://example.com/page1" }
+]
+```
+
+### GET /performance
+
+Strona do testowania wydajności z wizualizacją wykresów
 
 ### GET /api/reports
 

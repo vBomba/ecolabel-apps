@@ -1,11 +1,31 @@
-// --- Elementy DOM ---
+// Przełączanie zakładek
+document.addEventListener("DOMContentLoaded", () => {
+  const tabButtons = document.querySelectorAll(".tab-button");
+  const tabContents = document.querySelectorAll(".tab-content");
+
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const targetTab = button.getAttribute("data-tab");
+
+      // Usuń klasę active ze wszystkich przycisków i treści
+      tabButtons.forEach((btn) => btn.classList.remove("active"));
+      tabContents.forEach((content) => content.classList.remove("active"));
+
+      // Dodaj klasę active do klikniętego przycisku i docelowej treści
+      button.classList.add("active");
+      document.getElementById(targetTab).classList.add("active");
+    });
+  });
+});
+
+// Elementy DOM
 const urlInput = document.getElementById("url-input");
 const analyzeBtn = document.getElementById("analyze-btn");
 const progressSection = document.getElementById("progress-section");
 const resultsSection = document.getElementById("results-section");
 const errorSection = document.getElementById("error-section");
 
-// --- Elementy paska postępu ---
+// Elementy paska postępu
 const progressFill = document.getElementById("progress-fill");
 const progressText = document.getElementById("progress-text");
 const progressSteps = document.querySelector(".progress-steps");
@@ -653,7 +673,366 @@ function isValidUrl(string) {
   }
 }
 
-// --- Zainicjuj aplikację ---
+// --- Performance Testing Functions ---
+function parseUrlsFromTextarea() {
+  const textarea = document.getElementById("performance-textarea");
+  if (!textarea) return [];
+
+  const lines = textarea.value
+    .trim()
+    .split("\n")
+    .filter((line) => line.trim());
+  const urls = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.includes("|")) {
+      // Format: nazwa|url
+      const parts = trimmed.split("|").map((s) => s.trim());
+      if (parts.length === 2 && parts[1].startsWith("http")) {
+        urls.push({ name: parts[0], url: parts[1] });
+      }
+    } else if (trimmed.startsWith("http")) {
+      // Tylko URL bez nazwy
+      urls.push({ name: trimmed, url: trimmed });
+    }
+  }
+
+  return urls;
+}
+
+function clearPerformanceTextarea() {
+  const textarea = document.getElementById("performance-textarea");
+  if (textarea) {
+    textarea.value = "";
+  }
+}
+
+// Funkcja pomocnicza do tworzenia wykresów
+function createChart(container, labels, datasets, title, yAxisLabel) {
+  const chartContainer = document.createElement("div");
+  chartContainer.className = "chart-container";
+  const canvas = document.createElement("canvas");
+  chartContainer.appendChild(canvas);
+  container.appendChild(chartContainer);
+
+  new Chart(canvas, {
+    type: "bar",
+    data: { labels: labels, datasets: datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: "#000",
+            font: { size: 12 },
+            padding: 10,
+          },
+          position: "top",
+          align: "center",
+        },
+        title: {
+          display: true,
+          text: title,
+          color: "#000",
+          font: { size: 16, weight: "bold" },
+          padding: { top: 10, bottom: 20 },
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          display: true,
+          ticks: { color: "#333" },
+          grid: { color: "rgba(0,0,0,0.1)", display: true },
+          title: {
+            display: true,
+            text: yAxisLabel,
+            color: "#333",
+            font: { size: 12 },
+          },
+        },
+        x: {
+          display: true,
+          ticks: { color: "#333" },
+          grid: { color: "rgba(0,0,0,0.05)" },
+          title: {
+            display: true,
+            text: "Pages",
+            color: "#333",
+            font: { size: 12 },
+          },
+        },
+      },
+    },
+  });
+}
+
+async function loadResults() {
+  const chartsDiv = document.getElementById("charts");
+  const btnRunTests = document.querySelector(".btn-run-tests");
+
+  if (!chartsDiv || !btnRunTests) return;
+
+  btnRunTests.disabled = true;
+  btnRunTests.textContent = "Analizuję...";
+  chartsDiv.innerHTML =
+    "<p style='text-align:center; color:#fff;'>Ładowanie...</p>";
+
+  // Pobierz URL z textarea
+  const testUrls = parseUrlsFromTextarea();
+
+  // Jeśli brak URL, użyj domyślnych
+  const finalUrls =
+    testUrls.length > 0
+      ? testUrls
+      : [
+          { name: "Example Homepage", url: "https://www.example.com/" },
+          { name: "Example About", url: "https://www.example.com/about" },
+          { name: "Example Contact", url: "https://www.example.com/contact" },
+        ];
+
+  try {
+    const response = await fetch("/api/run-scenarios", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(finalUrls),
+    });
+    const data = await response.json();
+    chartsDiv.innerHTML = "";
+
+    // Przygotuj dane dla wykresów
+    const labels = data.map((s) => s.name);
+
+    // System metrics
+    const cpuSystemData = data.map((s) => s.metrics.systemCpuPercent ?? 0);
+    const ramUsedData = data.map((s) => s.metrics.systemUsedMemoryMB ?? 0);
+    const ramTotalData = data.map((s) => s.metrics.systemTotalMemoryMB ?? 0);
+
+    // JVM metrics
+    const jvmUsedData = data.map((s) => s.metrics.jvmUsedMemoryMB ?? 0);
+    const jvmTotalData = data.map((s) => s.metrics.jvmTotalMemoryMB ?? 0);
+
+    // Chrome metrics
+    const cpuChromeData = data.map((s) => s.metrics.CPUTime ?? 0);
+    const jsHeapUsedData = data.map((s) => s.metrics.JSHeapUsedSize ?? 0);
+    const jsHeapTotalData = data.map((s) => s.metrics.JSHeapTotalSize ?? 0);
+    const gpuEnabledData = data.map((s) =>
+      s.metrics.gpuCompositorEnabled ? 1 : 0
+    );
+
+    // Chrome DevTools Performance metrics (if available)
+    const navigationStartData = data.map((s) => s.metrics.NavigationStart ?? 0);
+    const domContentLoadedData = data.map(
+      (s) => s.metrics.DomContentLoaded ?? 0
+    );
+    const loadCompleteData = data.map((s) => s.metrics.LoadComplete ?? 0);
+
+    // Chart.js jest ładowane z CDN w index.html
+    if (typeof Chart === "undefined") {
+      chartsDiv.innerHTML =
+        "<p style='color:red;'>Chart.js nie jest załadowany</p>";
+      return;
+    }
+
+    // Utwórz wykresy dla wszystkich metryk
+    const cpuSystemContainer = document.createElement("div");
+    cpuSystemContainer.className = "chart-container";
+    const cpuSystemCanvas = document.createElement("canvas");
+    cpuSystemContainer.appendChild(cpuSystemCanvas);
+    chartsDiv.appendChild(cpuSystemContainer);
+    new Chart(cpuSystemCanvas, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "CPU system (%)",
+            data: cpuSystemData,
+            backgroundColor: "rgba(75, 192, 192, 0.6)",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { display: true, labels: { color: "#000" } },
+          title: {
+            display: true,
+            text: "System CPU Usage",
+            color: "#000",
+            font: { size: 16, weight: "bold" },
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            display: true,
+            ticks: { color: "#333" },
+            grid: { color: "rgba(0,0,0,0.1)", display: true },
+            title: {
+              display: true,
+              text: "Percentage (%)",
+              color: "#333",
+              font: { size: 12 },
+            },
+          },
+          x: {
+            display: true,
+            ticks: { color: "#333" },
+            grid: { color: "rgba(0,0,0,0.05)" },
+            title: {
+              display: true,
+              text: "Pages",
+              color: "#333",
+              font: { size: 12 },
+            },
+          },
+        },
+      },
+    });
+
+    // Додаткові графіки для всіх метрик
+
+    // 2. RAM Used vs Total
+    createChart(
+      chartsDiv,
+      labels,
+      [
+        {
+          label: "RAM Used (MB)",
+          data: ramUsedData,
+          backgroundColor: "rgba(255, 99, 132, 0.6)",
+        },
+        {
+          label: "RAM Total (MB)",
+          data: ramTotalData,
+          backgroundColor: "rgba(54, 162, 235, 0.6)",
+        },
+      ],
+      "System RAM Usage",
+      "Memory (MB)"
+    );
+
+    // 3. JVM Memory
+    createChart(
+      chartsDiv,
+      labels,
+      [
+        {
+          label: "JVM Used (MB)",
+          data: jvmUsedData,
+          backgroundColor: "rgba(153, 102, 255, 0.6)",
+        },
+        {
+          label: "JVM Total (MB)",
+          data: jvmTotalData,
+          backgroundColor: "rgba(255, 159, 64, 0.6)",
+        },
+      ],
+      "JVM Memory Usage",
+      "Memory (MB)"
+    );
+
+    // 4. Chrome CPU Time
+    createChart(
+      chartsDiv,
+      labels,
+      [
+        {
+          label: "CPU Time",
+          data: cpuChromeData,
+          backgroundColor: "rgba(75, 192, 192, 0.6)",
+        },
+      ],
+      "Chrome CPU Usage",
+      "CPU Time"
+    );
+
+    // 5. JS Heap Memory Used vs Total
+    createChart(
+      chartsDiv,
+      labels,
+      [
+        {
+          label: "JS Heap Used (bytes)",
+          data: jsHeapUsedData,
+          backgroundColor: "rgba(255, 99, 132, 0.6)",
+        },
+        {
+          label: "JS Heap Total (bytes)",
+          data: jsHeapTotalData,
+          backgroundColor: "rgba(54, 162, 235, 0.6)",
+        },
+      ],
+      "JavaScript Heap Memory",
+      "Heap Size (bytes)"
+    );
+
+    // 6. GPU Compositor Status
+    createChart(
+      chartsDiv,
+      labels,
+      [
+        {
+          label: "GPU Enabled",
+          data: gpuEnabledData,
+          backgroundColor: "rgba(255, 206, 86, 0.6)",
+        },
+      ],
+      "GPU Compositor Status",
+      "Enabled (1 = Yes, 0 = No)"
+    );
+
+    // 7. Page Load Timeline (if available)
+    if (
+      data.some(
+        (s) =>
+          s.metrics.NavigationStart ||
+          s.metrics.DomContentLoaded ||
+          s.metrics.LoadComplete
+      )
+    ) {
+      createChart(
+        chartsDiv,
+        labels,
+        [
+          {
+            label: "Navigation Start",
+            data: navigationStartData,
+            backgroundColor: "rgba(255, 159, 64, 0.6)",
+          },
+          {
+            label: "DOM Content Loaded",
+            data: domContentLoadedData,
+            backgroundColor: "rgba(153, 102, 255, 0.6)",
+          },
+          {
+            label: "Load Complete",
+            data: loadCompleteData,
+            backgroundColor: "rgba(255, 99, 132, 0.6)",
+          },
+        ],
+        "Page Load Timeline",
+        "Time (ms)"
+      );
+    }
+  } catch (err) {
+    chartsDiv.innerHTML =
+      "<p style='color:red;text-align:center;'>Błąd pobierania danych: " +
+      err +
+      "</p>";
+  } finally {
+    btnRunTests.disabled = false;
+    btnRunTests.textContent = "Uruchom testy";
+  }
+}
+
+// Inicjalizacja aplikacji
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Interfejs EcoLabel zainicjalizowany");
 

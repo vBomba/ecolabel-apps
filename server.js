@@ -6,6 +6,8 @@ import lighthouse from "lighthouse";
 import fs from "fs";
 import cors from "cors";
 import { getBrowserPath } from "./utils.js";
+import Scenario from "./src/scenario.js";
+import Config from "./src/config.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,7 +20,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// --- Obliczanie EcoScore ---
+// Obliczanie EcoScore
 function normalizeScore(value, min, max) {
   return Math.max(0, Math.min(100, ((max - value) / (max - min)) * 100));
 }
@@ -53,7 +55,7 @@ function calculateEcoScore(report) {
   };
 }
 
-// --- Zapisywanie i analiza raportu ---
+// Zapisywanie i analiza raportu
 function saveAndAnalyzeReport(report, url) {
   const domain = new URL(url).hostname.replace(/\./g, "-");
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -73,7 +75,7 @@ function saveAndAnalyzeReport(report, url) {
   return { ecoData, filename, report };
 }
 
-// --- Funkcja dla agregacji wyników wielu stron ---
+// Agregacja wyników wielu stron
 function aggregateEcoScores(ecoScoresArray) {
   if (ecoScoresArray.length === 0) {
     throw new Error("No eco scores to aggregate");
@@ -94,7 +96,7 @@ function aggregateEcoScores(ecoScoresArray) {
   };
 }
 
-// --- Określenie eco-label na podstawie wyniku ---
+// Określenie eco-label na podstawie wyniku
 function getEcoLabel(ecoScore) {
   if (ecoScore >= 80)
     return { grade: "A", label: "Excellent", color: "#27ae60" };
@@ -104,7 +106,7 @@ function getEcoLabel(ecoScore) {
   return { grade: "F", label: "Critical", color: "#8b0000" };
 }
 
-// --- Główna funkcja analizy ---
+// Główna funkcja analizy
 async function runLighthouseWithCookieHandling(url) {
   console.log(`\n🔍 Analizuję ${url} ...`);
 
@@ -185,7 +187,7 @@ app.post("/api/analyze", async (req, res) => {
 
     const result = await runLighthouseWithCookieHandling(url);
 
-    // Return the result with URL
+    // Zwróć wynik z URL
     res.json({
       url,
       ...result,
@@ -401,6 +403,42 @@ app.get("/api/website-reports/:filename", (req, res) => {
   } catch (error) {
     console.error("Error fetching website report:", error);
     res.status(500).json({ error: "Failed to fetch website report" });
+  }
+});
+
+// Endpoint testowania wydajności
+app.post("/api/run-scenarios", async (req, res) => {
+  try {
+    const scenarios = [];
+    const customUrls = req.body; // Tablica {name, url}
+
+    // Użycie niestandardowych URL lub domyślnych przykładów
+    const urlsToTest =
+      customUrls && customUrls.length > 0
+        ? customUrls
+        : [
+            { name: "Example Homepage", url: "https://www.example.com/" },
+            { name: "Example About", url: "https://www.example.com/about" },
+            { name: "Example Contact", url: "https://www.example.com/contact" },
+          ];
+
+    for (const item of urlsToTest) {
+      scenarios.push(new Scenario(item.name, item.url));
+    }
+
+    // Uruchom wszystkie scenariusze
+    for (const scenario of scenarios) {
+      await scenario.run();
+    }
+
+    // Zamknij sterownik
+    await Config.quitDriver();
+
+    // Zwróć dane scenariuszy
+    res.json(scenarios);
+  } catch (error) {
+    console.error("Error running scenarios:", error);
+    res.status(500).json({ error: error.message });
   }
 });
 

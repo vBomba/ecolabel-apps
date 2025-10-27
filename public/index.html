@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EcoLabel - Analiza ekologiczności stron internetowych</title>
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <div class="container">
@@ -14,206 +15,294 @@
           <h1>EcoLabel</h1>
         </div>
         <p class="subtitle">Analiza ekologiczności stron internetowych</p>
+        <nav
+          class="nav"
+          style="
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+          "
+        >
+          <a
+            href="/"
+            style="
+              color: #fff;
+              text-decoration: none;
+              padding: 0.5rem 1rem;
+              background: rgba(255, 255, 255, 0.1);
+              border-radius: 8px;
+            "
+            >Analiza ekologiczności</a
+          >
+          <a
+            href="/performance"
+            style="
+              color: #fff;
+              text-decoration: none;
+              padding: 0.5rem 1rem;
+              background: rgba(255, 255, 255, 0.1);
+              border-radius: 8px;
+            "
+            >Performance Testing</a
+          >
+        </nav>
       </header>
 
       <main class="main-content">
-        <div class="input-section">
-          <div class="input-group">
-            <label for="url-input"
-              >Wprowadź URL strony internetowej do analizy:</label
-            >
-            <div class="input-wrapper">
-              <input
-                type="url"
-                id="url-input"
-                placeholder="https://example.com"
-                required
-              />
-              <button id="analyze-btn" class="analyze-btn">
-                <i class="icon icon-search"></i>
-                Analizuj
-              </button>
-            </div>
-          </div>
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+          <button class="tab-button active" data-tab="eco-analysis">
+            🌱 Eco Analysis
+          </button>
+          <button class="tab-button" data-tab="performance">
+            ⚡ Performance Testing
+          </button>
         </div>
 
-        <!-- Multi-page analysis section -->
-        <div class="multi-page-section">
-          <h3>🌐 Analiza wielu stron serwisu</h3>
-          <p>
-            Analizuj kilka stron jednego serwisu i otrzymaj wspólną etykietę
-            ekologiczności:
-          </p>
-          <div class="input-group">
-            <label for="multi-urls-input"
-              >Wprowadź adresy URL (jeden na linię, max 10):</label
-            >
-            <div class="input-wrapper-multi">
-              <textarea
-                id="multi-urls-input"
-                placeholder="https://www.example.com/
+        <!-- Eco Analysis Tab -->
+        <div id="eco-analysis" class="tab-content active">
+          <div class="input-section">
+            <div class="input-group">
+              <label for="url-input"
+                >Wprowadź URL strony internetowej do analizy:</label
+              >
+              <div class="input-wrapper">
+                <input
+                  type="url"
+                  id="url-input"
+                  placeholder="https://example.com"
+                  required
+                />
+                <button id="analyze-btn" class="analyze-btn">
+                  <i class="icon icon-search"></i>
+                  Analizuj
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Multi-page analysis section -->
+          <div class="multi-page-section">
+            <h3>🌐 Analiza wielu stron serwisu</h3>
+            <p>
+              Analizuj kilka stron jednego serwisu i otrzymaj wspólną etykietę
+              ekologiczności:
+            </p>
+            <div class="input-group">
+              <label for="multi-urls-input"
+                >Wprowadź adresy URL (jeden na linię, max 10):</label
+              >
+              <div class="input-wrapper-multi">
+                <textarea
+                  id="multi-urls-input"
+                  placeholder="https://www.example.com/
 https://www.example.com/page1
 https://www.example.com/page2"
-                rows="5"
-              ></textarea>
-              <button id="analyze-multi-btn" class="analyze-btn analyze-multi">
-                <i class="icon icon-chart-line"></i>
-                Analizuj wiele stron
+                  rows="5"
+                ></textarea>
+                <button
+                  id="analyze-multi-btn"
+                  class="analyze-btn analyze-multi"
+                >
+                  <i class="icon icon-chart-line"></i>
+                  Analizuj wiele stron
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="progress-section" class="progress-section hidden">
+            <div class="progress-header">
+              <h3>Analiza w toku...</h3>
+              <div class="progress-steps">
+                <div class="step active" id="step-loading">
+                  <i class="icon icon-spinner"></i>
+                  <span>Ładowanie strony</span>
+                </div>
+                <div class="step" id="step-lighthouse">
+                  <i class="icon icon-chart-line"></i>
+                  <span>Uruchamianie Lighthouse</span>
+                </div>
+                <div class="step" id="step-analysis">
+                  <i class="icon icon-calculator"></i>
+                  <span>Obliczanie EcoScore</span>
+                </div>
+                <div class="step" id="step-complete">
+                  <i class="icon icon-check"></i>
+                  <span>Zakończono</span>
+                </div>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="progress-text" id="progress-text">
+              Przygotowywanie do analizy...
+            </div>
+          </div>
+
+          <div id="results-section" class="results-section hidden">
+            <div class="results-header">
+              <h3>Wyniki analizy</h3>
+              <div class="url-display" id="analyzed-url"></div>
+            </div>
+
+            <div class="score-card">
+              <div class="score-main">
+                <div class="score-circle" id="score-circle">
+                  <span class="score-value" id="score-value">0</span>
+                  <span class="score-label">ECOSCORE</span>
+                </div>
+                <div class="score-grade" id="score-grade">F</div>
+              </div>
+              <div class="score-description" id="score-description">
+                Twoja strona wymaga znacznej poprawy ekologiczności
+              </div>
+            </div>
+
+            <div class="metrics-grid">
+              <div
+                class="metric-card"
+                data-tooltip="Ocena szybkości ładowania strony"
+              >
+                <div class="metric-icon">
+                  <i class="icon icon-tachometer-alt"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Wydajność</div>
+                  <div class="metric-value" id="performance-value">0/100</div>
+                </div>
+              </div>
+
+              <div
+                class="metric-card"
+                data-tooltip="Całkowity rozmiar wszystkich zasobów strony"
+              >
+                <div class="metric-icon">
+                  <i class="icon icon-database"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Rozmiar strony</div>
+                  <div class="metric-value" id="size-value">0 KB</div>
+                </div>
+              </div>
+
+              <div
+                class="metric-card"
+                data-tooltip="Czas wykonywania JavaScript na stronie"
+              >
+                <div class="metric-icon">
+                  <i class="icon icon-clock"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Czas ładowania</div>
+                  <div class="metric-value" id="bootup-value">0 ms</div>
+                </div>
+              </div>
+
+              <div
+                class="metric-card"
+                data-tooltip="Czy hosting wykorzystuje energię odnawialną"
+              >
+                <div class="metric-icon">
+                  <i class="icon icon-leaf"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Zielony hosting</div>
+                  <div class="metric-value" id="hosting-value">Nie</div>
+                </div>
+              </div>
+
+              <div
+                class="metric-card"
+                data-tooltip="Czy obrazy są odpowiednio optymalizowane"
+              >
+                <div class="metric-icon">
+                  <i class="icon icon-image"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">Optymalizacja obrazów</div>
+                  <div class="metric-value" id="images-value">Nie</div>
+                </div>
+              </div>
+
+              <div
+                class="metric-card"
+                data-tooltip="Cumulative Layout Shift - stabilność wizualna"
+              >
+                <div class="metric-icon">
+                  <i class="icon icon-ruler"></i>
+                </div>
+                <div class="metric-content">
+                  <div class="metric-label">CLS</div>
+                  <div class="metric-value" id="cls-value">0.000</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pages list for multi-page analysis -->
+            <div id="pages-list" class="pages-list hidden"></div>
+
+            <div class="recommendations">
+              <h4>Rekomendacje do poprawy:</h4>
+              <ul id="recommendations-list">
+                <!-- Rekomendacje będą dodane dynamicznie -->
+              </ul>
+            </div>
+
+            <div class="actions">
+              <button id="new-analysis-btn" class="btn-secondary">
+                <i class="icon icon-plus"></i>
+                Nowa analiza
+              </button>
+              <button id="download-report-btn" class="btn-primary">
+                <i class="icon icon-download"></i>
+                Pobierz raport
               </button>
             </div>
           </div>
         </div>
+        <!-- End Eco Analysis Tab -->
 
-        <div id="progress-section" class="progress-section hidden">
-          <div class="progress-header">
-            <h3>Analiza w toku...</h3>
-            <div class="progress-steps">
-              <div class="step active" id="step-loading">
-                <i class="icon icon-spinner"></i>
-                <span>Ładowanie strony</span>
-              </div>
-              <div class="step" id="step-lighthouse">
-                <i class="icon icon-chart-line"></i>
-                <span>Uruchamianie Lighthouse</span>
-              </div>
-              <div class="step" id="step-analysis">
-                <i class="icon icon-calculator"></i>
-                <span>Obliczanie EcoScore</span>
-              </div>
-              <div class="step" id="step-complete">
-                <i class="icon icon-check"></i>
-                <span>Zakończono</span>
-              </div>
-            </div>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" id="progress-fill"></div>
-          </div>
-          <div class="progress-text" id="progress-text">
-            Przygotowywanie do analizy...
-          </div>
-        </div>
+        <!-- Performance Testing Tab -->
+        <div id="performance" class="tab-content">
+          <div class="performance-tab-wrapper">
+            <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem">
+              Test wydajności stron przy użyciu Selenium WebDriver i Chrome
+              DevTools
+            </p>
 
-        <div id="results-section" class="results-section hidden">
-          <div class="results-header">
-            <h3>Wyniki analizy</h3>
-            <div class="url-display" id="analyzed-url"></div>
-          </div>
+            <div class="url-input-container">
+              <h3>Dodaj strony do testowania</h3>
+              <p>
+                Wprowadź URL stron (jeden na linię) w formacie: nazwa|url
+                <br />Przykład: <br />Homepage|https://www.example.com
+                <br />About|https://www.example.com/about
+                <br />Contact|https://www.example.com/contact
+              </p>
+              <textarea
+                id="performance-textarea"
+                class="url-input"
+                placeholder="Homepage|https://www.example.com&#10;About|https://www.example.com/about&#10;Contact|https://www.example.com/contact"
+                rows="8"
+              ></textarea>
 
-          <div class="score-card">
-            <div class="score-main">
-              <div class="score-circle" id="score-circle">
-                <span class="score-value" id="score-value">0</span>
-                <span class="score-label">ECOSCORE</span>
-              </div>
-              <div class="score-grade" id="score-grade">F</div>
-            </div>
-            <div class="score-description" id="score-description">
-              Twoja strona wymaga znacznej poprawy ekologiczności
-            </div>
-          </div>
-
-          <div class="metrics-grid">
-            <div
-              class="metric-card"
-              data-tooltip="Ocena szybkości ładowania strony"
-            >
-              <div class="metric-icon">
-                <i class="icon icon-tachometer-alt"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">Wydajność</div>
-                <div class="metric-value" id="performance-value">0/100</div>
-              </div>
+              <button class="btn-run-tests" onclick="loadResults()">
+                Uruchom testy
+              </button>
+              <button
+                class="btn-secondary"
+                onclick="clearPerformanceTextarea()"
+              >
+                Wyczyść
+              </button>
             </div>
 
-            <div
-              class="metric-card"
-              data-tooltip="Całkowity rozmiar wszystkich zasobów strony"
-            >
-              <div class="metric-icon">
-                <i class="icon icon-database"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">Rozmiar strony</div>
-                <div class="metric-value" id="size-value">0 KB</div>
-              </div>
-            </div>
-
-            <div
-              class="metric-card"
-              data-tooltip="Czas wykonywania JavaScript na stronie"
-            >
-              <div class="metric-icon">
-                <i class="icon icon-clock"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">Czas ładowania</div>
-                <div class="metric-value" id="bootup-value">0 ms</div>
-              </div>
-            </div>
-
-            <div
-              class="metric-card"
-              data-tooltip="Czy hosting wykorzystuje energię odnawialną"
-            >
-              <div class="metric-icon">
-                <i class="icon icon-leaf"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">Zielony hosting</div>
-                <div class="metric-value" id="hosting-value">Nie</div>
-              </div>
-            </div>
-
-            <div
-              class="metric-card"
-              data-tooltip="Czy obrazy są odpowiednio optymalizowane"
-            >
-              <div class="metric-icon">
-                <i class="icon icon-image"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">Optymalizacja obrazów</div>
-                <div class="metric-value" id="images-value">Nie</div>
-              </div>
-            </div>
-
-            <div
-              class="metric-card"
-              data-tooltip="Cumulative Layout Shift - stabilność wizualna"
-            >
-              <div class="metric-icon">
-                <i class="icon icon-ruler"></i>
-              </div>
-              <div class="metric-content">
-                <div class="metric-label">CLS</div>
-                <div class="metric-value" id="cls-value">0.000</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pages list for multi-page analysis -->
-          <div id="pages-list" class="pages-list hidden"></div>
-
-          <div class="recommendations">
-            <h4>Rekomendacje do poprawy:</h4>
-            <ul id="recommendations-list">
-              <!-- Rekomendacje będą dodane dynamicznie -->
-            </ul>
-          </div>
-
-          <div class="actions">
-            <button id="new-analysis-btn" class="btn-secondary">
-              <i class="icon icon-plus"></i>
-              Nowa analiza
-            </button>
-            <button id="download-report-btn" class="btn-primary">
-              <i class="icon icon-download"></i>
-              Pobierz raport
-            </button>
+            <div id="charts"></div>
           </div>
         </div>
+        <!-- End Performance Testing Tab -->
 
         <div id="error-section" class="error-section hidden">
           <div class="error-content">

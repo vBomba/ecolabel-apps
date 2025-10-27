@@ -7,8 +7,6 @@
   vertical-align: middle;
 }
 .icon-leaf {
-  width: 2.5rem;
-  height: 2.5rem;
   color: #000000;
 }
 .icon-search {
@@ -1337,6 +1335,295 @@ body {
 }
 .step.completed {
   animation: slideInRight 0.3s ease-out;
+}
+
+.tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.tab-button {
+  padding: 1rem 2rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  min-width: 140px;
+  letter-spacing: 0.5px;
+  min-width: 140px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 1rem;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid #d9d9d9;
+  color: #000000;
+}
+.tab-button:hover {
+  background: #f9f9f9;
+  border-color: #000000;
+}
+.tab-button.active {
+  padding: 1rem 2rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  min-width: 140px;
+  letter-spacing: 0.5px;
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid #000000;
+}
+.tab-button.active:hover {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.tab-button.active:active {
+  transform: scale(0.98);
+}
+.tab-button.active:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.4s ease-out;
+}
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.performance-tab-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.url-input-container {
+  background: #ffffff;
+  padding: 3rem;
+  border-radius: 12px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  backdrop-filter: none;
+  border: 1px solid #d9d9d9;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+.url-input-container h3 {
+  margin-top: 0;
+  color: #000000;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.url-input-container p {
+  color: #5a5a5a;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.url-input {
+  width: 100%;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  color: #000000;
+  font-size: 1rem;
+  font-family: monospace;
+  resize: vertical;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.url-input:focus {
+  outline: none;
+  border-color: #00d084;
+  box-shadow: 0 0 0 3px rgba(0, 208, 132, 0.1);
+}
+.url-input::placeholder {
+  color: #bfbfbf;
+}
+
+.add-url-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background: #e8e8e8;
+  border: 1px solid #d9d9d9;
+  color: #000000;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+}
+.add-url-btn:hover {
+  background: #d9d9d9;
+  border-color: #bfbfbf;
+}
+
+.url-list {
+  margin: 1rem 0;
+}
+
+.url-item {
+  padding: 1rem;
+  margin: 0.5rem 0;
+  background: #f9f9f9;
+  border-left: 3px solid #00d084;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 8px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.url-item:hover {
+  background: #f0f0f0;
+}
+.url-item span {
+  color: #000000;
+  font-size: 0.875rem;
+}
+.url-item button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  background: #ff6b6b;
+  border: none;
+  color: #ffffff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.url-item button:hover {
+  background: #ff3838;
+}
+
+.btn-run-tests {
+  padding: 1rem 2rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  min-width: 140px;
+  letter-spacing: 0.5px;
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid #000000;
+}
+.btn-run-tests:hover {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.btn-run-tests:active {
+  transform: scale(0.98);
+}
+.btn-run-tests:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn-run-tests {
+  font-size: 1rem;
+  min-width: 140px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0.5rem;
+}
+.btn-run-tests:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.chart-container {
+  background: #ffffff;
+  padding: 3rem;
+  border-radius: 12px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  backdrop-filter: none;
+  border: 1px solid #d9d9d9;
+  padding: 2rem;
+  margin: 2rem 0;
+  background: #ffffff;
+}
+.chart-container canvas {
+  max-height: 400px;
+  max-width: 100%;
+}
+
+button.btn-secondary {
+  padding: 1rem 2rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  min-width: 140px;
+  letter-spacing: 0.5px;
+  background: #f0f0f0;
+  color: #000000;
+  border: 1px solid #d9d9d9;
+}
+button.btn-secondary:hover {
+  background: #e8e8e8;
+  border-color: #bfbfbf;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+button.btn-secondary:active {
+  transform: scale(0.98);
+}
+button.btn-secondary {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 1rem;
+  min-width: 140px;
 }
 
 /*# sourceMappingURL=styles.css.map */

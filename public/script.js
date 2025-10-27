@@ -898,6 +898,16 @@ async function loadResults() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(finalUrls),
     });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ error: "Unknown error occurred" }));
+      throw new Error(
+        errorData.error || `HTTP error! status: ${response.status}`
+      );
+    }
+
     const data = await response.json();
     chartsDiv.innerHTML = "";
 
@@ -1120,10 +1130,24 @@ async function loadResults() {
       );
     }
   } catch (err) {
-    chartsDiv.innerHTML =
-      "<p style='color:red;text-align:center;'>Błąd pobierania danych: " +
-      err +
-      "</p>";
+    console.error("Error loading results:", err);
+    const errorMessage = err.message || err.toString();
+    const errorDetails =
+      err.details || (err.stack ? err.stack.substring(0, 200) : "");
+    chartsDiv.innerHTML = `
+      <div style="padding: 2rem; background: rgba(255, 99, 132, 0.1); border-radius: 8px; border: 2px solid rgba(255, 99, 132, 0.3);">
+        <h3 style="color: #ff6b6b; margin-bottom: 1rem;">❌ Błąd podczas uruchamiania testów</h3>
+        <p style="color: #fff; margin-bottom: 0.5rem;"><strong>Błąd:</strong> ${errorMessage}</p>
+        ${
+          errorDetails
+            ? `<p style="color: rgba(255,255,255,0.7); font-size: 0.9rem; white-space: pre-wrap;">${errorDetails}</p>`
+            : ""
+        }
+        <p style="color: rgba(255,255,255,0.6); margin-top: 1rem; font-size: 0.9rem;">
+          Sprawdź konsolę serwera lub przeglądarki (F12) aby zobaczyć więcej szczegółów.
+        </p>
+      </div>
+    `;
   } finally {
     btnRunTests.disabled = false;
     btnRunTests.textContent = "Uruchom testy";

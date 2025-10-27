@@ -1,6 +1,10 @@
 import { Builder } from "selenium-webdriver";
-import { Options as ChromeOptions } from "selenium-webdriver/chrome.js";
+import {
+  Options as ChromeOptions,
+  ServiceBuilder,
+} from "selenium-webdriver/chrome.js";
 import { getBrowserPath } from "../utils.js";
+import chromedriver from "chromedriver";
 
 class Config {
   static driver = null;
@@ -15,9 +19,18 @@ class Config {
 
       // Ustaw ścieżkę do Chrome
       const browserPath = getBrowserPath();
+      console.log(`📍 Browser path: ${browserPath}`);
+
       if (browserPath) {
         options.setChromeBinaryPath(browserPath);
+        console.log(`✅ Chrome binary path set successfully`);
+      } else {
+        console.warn(`⚠️ Chrome path not found! Trying to continue...`);
       }
+
+      // Dodaj flagę, żeby okno było widoczne
+      options.addArguments("--start-maximized");
+      options.addArguments("--disable-infobars");
 
       options.addArguments("--no-sandbox");
       options.addArguments("--disable-dev-shm-usage");
@@ -57,14 +70,44 @@ class Config {
       options.addArguments("--disable-gcm");
       options.addArguments("--disable-service-worker-autostart");
 
-      this.driver = await new Builder()
-        .forBrowser("chrome")
-        .setChromeOptions(options)
-        .build();
+      console.log(`🚀 Building WebDriver with Chrome options...`);
 
+      // Konfiguracja ChromeDriver Service
+      let service = undefined;
+      try {
+        const chromeDriverPath = chromedriver.path;
+        if (chromeDriverPath) {
+          console.log(`📦 ChromeDriver path: ${chromeDriverPath}`);
+          service = new ServiceBuilder(chromeDriverPath);
+        } else {
+          console.log(`⚠️ ChromeDriver path not found in package`);
+        }
+      } catch (serviceError) {
+        console.warn(
+          `⚠️ Could not setup ChromeDriver Service: ${serviceError.message}`
+        );
+        console.log(
+          `   Trying to use Selenium's automatic driver management...`
+        );
+      }
+
+      const builder = new Builder()
+        .forBrowser("chrome")
+        .setChromeOptions(options);
+
+      if (service) {
+        console.log(`🔧 Using custom ChromeDriver Service`);
+        builder.setChromeService(service);
+      }
+
+      this.driver = await builder.build();
+
+      console.log(`✅ WebDriver initialized successfully`);
       return this.driver;
     } catch (error) {
-      console.error("Error initializing WebDriver:", error);
+      console.error("❌ Error initializing WebDriver:", error);
+      console.error("Error details:", error.message);
+      console.error("Error stack:", error.stack);
       throw error;
     }
   }

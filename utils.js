@@ -16,24 +16,41 @@ export function getBrowserPath() {
       "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
       "C:\\Program Files\\Chromium\\Application\\chrome.exe",
       "C:\\Program Files (x86)\\Chromium\\Application\\chrome.exe",
-      path.join(
-        process.env.LOCALAPPDATA,
-        "Google\\Chrome\\Application\\chrome.exe"
-      ),
-      path.join(
-        process.env.PROGRAMFILES,
-        "Google\\Chrome\\Application\\chrome.exe"
-      ),
-      path.join(
-        process.env["PROGRAMFILES(x86)"],
-        "Google\\Chrome\\Application\\chrome.exe"
-      ),
     ];
 
+    // Add environment variable paths only if they exist
+    if (process.env.LOCALAPPDATA) {
+      possiblePaths.push(
+        path.join(
+          process.env.LOCALAPPDATA,
+          "Google\\Chrome\\Application\\chrome.exe"
+        )
+      );
+    }
+    if (process.env.PROGRAMFILES) {
+      possiblePaths.push(
+        path.join(
+          process.env.PROGRAMFILES,
+          "Google\\Chrome\\Application\\chrome.exe"
+        )
+      );
+    }
+    if (process.env["PROGRAMFILES(x86)"]) {
+      possiblePaths.push(
+        path.join(
+          process.env["PROGRAMFILES(x86)"],
+          "Google\\Chrome\\Application\\chrome.exe"
+        )
+      );
+    }
+
+    console.log(`🔍 Searching for Chrome on Windows...`);
     for (const chromePath of possiblePaths) {
       if (chromePath && fs.existsSync(chromePath)) {
         console.log(`✅ Chrome found at: ${chromePath}`);
         return chromePath;
+      } else if (chromePath) {
+        console.log(`❌ Not found: ${chromePath}`);
       }
     }
 

@@ -10,11 +10,20 @@ class Scenario {
 
   async run() {
     console.log(`=== ${this.name} ===`);
+    console.log(`📍 URL: ${this.url}`);
 
-    const driver = await Config.getDriver();
+    let driver;
+    try {
+      driver = await Config.getDriver();
+      console.log(`✅ Driver obtained for scenario: ${this.name}`);
+    } catch (error) {
+      console.error(`❌ Failed to get driver: ${error.message}`);
+      throw error;
+    }
 
     try {
       // Przejdź do URL
+      console.log(`🌐 Navigating to: ${this.url}`);
       await driver.get(this.url);
 
       // Czekaj na załadowanie strony

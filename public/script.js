@@ -333,15 +333,39 @@ function showResults(result) {
     const co2Total = document.getElementById("co2-total");
     const co2Trees = document.getElementById("co2-trees");
     const co2Cars = document.getElementById("co2-cars");
-    
+
     if (co2Total) {
-      co2Total.textContent = `${result.ecoData.co2.totalCO2.toFixed(4)} kg`;
+      // Wyświetl w odpowiedniej jednostce (mg dla małych wartości, g dla większych)
+      let co2Display = "";
+      const totalGrams = result.ecoData.co2.totalCO2 * 1000;
+      if (totalGrams < 1) {
+        co2Display = `${(totalGrams * 1000).toFixed(2)} mg`;
+      } else if (totalGrams < 1000) {
+        co2Display = `${totalGrams.toFixed(2)} g`;
+      } else {
+        co2Display = `${result.ecoData.co2.totalCO2.toFixed(4)} kg`;
+      }
+      co2Total.textContent = co2Display;
     }
     if (co2Trees) {
-      co2Trees.textContent = result.ecoData.co2.equivalentTrees.toFixed(2);
+      const trees = result.ecoData.co2.equivalentTrees;
+      if (trees < 1) {
+        co2Trees.textContent = trees.toFixed(4);
+      } else if (trees < 100) {
+        co2Trees.textContent = trees.toFixed(2);
+      } else {
+        co2Trees.textContent = trees.toFixed(0);
+      }
     }
     if (co2Cars) {
-      co2Cars.textContent = `${result.ecoData.co2.equivalentCarsKm.toFixed(2)} km`;
+      const km = result.ecoData.co2.equivalentCarsKm;
+      if (km < 0.01) {
+        co2Cars.textContent = `${(km * 1000).toFixed(1)} m`;
+      } else if (km < 1) {
+        co2Cars.textContent = `${km.toFixed(3)} km`;
+      } else {
+        co2Cars.textContent = `${km.toFixed(2)} km`;
+      }
     }
   }
 
@@ -748,15 +772,39 @@ function showMultiPageResults(result) {
     const co2Total = document.getElementById("co2-total");
     const co2Trees = document.getElementById("co2-trees");
     const co2Cars = document.getElementById("co2-cars");
-    
+
     if (co2Total) {
-      co2Total.textContent = `${data.co2.totalCO2.toFixed(4)} kg`;
+      // Wyświetl w odpowiedniej jednostce (mg dla małych wartości, g dla większych)
+      let co2Display = "";
+      const totalGrams = data.co2.totalCO2 * 1000;
+      if (totalGrams < 1) {
+        co2Display = `${(totalGrams * 1000).toFixed(2)} mg`;
+      } else if (totalGrams < 1000) {
+        co2Display = `${totalGrams.toFixed(2)} g`;
+      } else {
+        co2Display = `${data.co2.totalCO2.toFixed(4)} kg`;
+      }
+      co2Total.textContent = co2Display;
     }
     if (co2Trees) {
-      co2Trees.textContent = data.co2.equivalentTrees.toFixed(2);
+      const trees = data.co2.equivalentTrees;
+      if (trees < 1) {
+        co2Trees.textContent = trees.toFixed(4);
+      } else if (trees < 100) {
+        co2Trees.textContent = trees.toFixed(2);
+      } else {
+        co2Trees.textContent = trees.toFixed(0);
+      }
     }
     if (co2Cars) {
-      co2Cars.textContent = `${data.co2.equivalentCarsKm.toFixed(2)} km`;
+      const km = data.co2.equivalentCarsKm;
+      if (km < 0.01) {
+        co2Cars.textContent = `${(km * 1000).toFixed(1)} m`;
+      } else if (km < 1) {
+        co2Cars.textContent = `${km.toFixed(3)} km`;
+      } else {
+        co2Cars.textContent = `${km.toFixed(2)} km`;
+      }
     }
   }
 

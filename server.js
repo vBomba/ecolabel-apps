@@ -26,31 +26,44 @@ function normalizeScore(value, min, max) {
 }
 
 // Obliczanie emisji CO2 na podstawie metryk strony
+// Wartości bazowane na badaniach: 
+// - Średnia emisja dla normalnego hostingu: ~1.76g CO2/MB
+// - Średnia emisja dla zielonego hostingu: ~0.4g CO2/MB
+// - 1 drzewo pochłania ~21 kg CO2 rocznie
+// - 1 km jazdy samochodem emituje ~120g CO2
 function calculateCO2(ecoData) {
-  // Bazowe wartości dla różnych komponentów
-  const CO2_PER_BYTE_GREEN = 0.000024 / 1024; // kg CO2/KB dla zielonego hostingu
-  const CO2_PER_BYTE_NORMAL = 0.000048 / 1024; // kg CO2/KB dla normalnego hostingu
-  const CO2_PER_MS_CPU = 0.000001; // kg CO2 na milisekundę CPU time
+  // Konwersja: 1 MB = 1024 * 1024 bytes
+  const BYTES_PER_MB = 1024 * 1024;
+  
+  // Emisja CO2 na MB (gramy)
+  const CO2_PER_MB_GREEN = 0.4; // 0.4g CO2/MB dla zielonego hostingu
+  const CO2_PER_MB_NORMAL = 1.76; // 1.76g CO2/MB dla normalnego hostingu
+  
+  // Emisja CO2 za CPU time (dodatkowe zużycie energii)
+  const CO2_PER_SECOND_CPU = 0.00001; // gram CO2 na sekundę CPU
   
   const isGreenHosting = ecoData.hostingGreen > 0;
-  const co2PerByte = isGreenHosting ? CO2_PER_BYTE_GREEN : CO2_PER_BYTE_NORMAL;
+  const co2PerMB = isGreenHosting ? CO2_PER_MB_GREEN : CO2_PER_MB_NORMAL;
   
-  // Oblicz emisję dla danych
-  const dataCO2 = ecoData.totalBytes * co2PerByte;
+  // Oblicz emisję dla przesyłu danych (w gramach)
+  const dataSizeMB = ecoData.totalBytes / BYTES_PER_MB;
+  const dataCO2 = dataSizeMB * co2PerMB;
   
-  // Dodatkowa emisja za CPU time (czas ładowania strony)
-  const bootupCO2 = ecoData.bootupTime * CO2_PER_MS_CPU;
+  // Dodatkowa emisja za CPU time (czas ładowania i przetwarzania)
+  const bootupSeconds = ecoData.bootupTime / 1000; // konwersja ms -> sekundy
+  const bootupCO2 = bootupSeconds * CO2_PER_SECOND_CPU;
   
-  // Całkowita emisja
-  const totalCO2 = dataCO2 + bootupCO2;
+  // Całkowita emisja w gramach, konwersja na kg
+  const totalCO2Grams = dataCO2 + bootupCO2;
+  const totalCO2 = totalCO2Grams / 1000; // konwersja na kg
   
   return {
     totalCO2, // w kg
-    dataCO2,
-    bootupCO2,
-    co2PerByte,
-    equivalentTrees: totalCO2 / 0.021, // Średnia roczna absorpcja jednego drzewa (kg CO2)
-    equivalentCarsKm: totalCO2 / 0.120, // Średnia emisja na km przejechany samochodem
+    dataCO2: dataCO2 / 1000, // w kg
+    bootupCO2: bootupCO2 / 1000, // w kg
+    dataSizeMB,
+    equivalentTrees: totalCO2 / 0.021, // Liczba drzew potrzebnych na rok aby zrównoważyć
+    equivalentCarsKm: (totalCO2Grams / 120) * 1000, // km jazdy samochodem (120g CO2/km)
     perVisit: totalCO2, // Emisja na jedno odwiedzenie strony
   };
 }

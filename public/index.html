@@ -258,21 +258,24 @@ https://www.example.com/page2"
               <h4>Emisja CO2</h4>
               <div class="co2-grid">
                 <div class="co2-card">
-                  <div>Całkowita emisja CO2</div>
+                  <div>Całkowita emisja CO2 <span class="co2-explanation">(na jedno odwiedzenie strony)</span></div>
                   <div id="co2-total">0 mg</div>
+                  <p class="co2-detail">Emisja CO₂ podczas ładowania strony obejmuje: przesył danych przez sieć, przetwarzanie na serwerze oraz wykonywanie JavaScript w przeglądarce.</p>
                 </div>
                 <div class="co2-card">
-                  <div>Równoważne drzewa</div>
+                  <div>Równoważne drzewa <span class="co2-explanation">(czynnik pochłaniania roczny)</span></div>
                   <div id="co2-trees">0</div>
+                  <p class="co2-detail">Liczba drzew potrzebna do pochłonięcia tej emisji CO₂ w ciągu roku. Średnio jedno drzewo pochłania 21 kg CO₂ rocznie poprzez fotosyntezę.</p>
                 </div>
                 <div class="co2-card">
-                  <div>Równoważne km jazdy</div>
+                  <div>Równoważne km jazdy <span class="co2-explanation">(samochodem osobowym)</span></div>
                   <div id="co2-cars">0 m</div>
+                  <p class="co2-detail">Odległość jaką musiałbyś przejechać samochodem osobowym (średnia klasa), aby wyemitować taką samą ilość CO₂. Średnio 120 g CO₂/km.</p>
                 </div>
               </div>
-              <p>
-                * Emisja CO2 obliczana na podstawie rozmiaru strony, czasu
-                ładowania oraz typu hostingu
+              <p class="co2-note">
+                * Obliczenia bazują na metodologii: 0.81 kWh/GB transferu danych, 475 g CO₂/kWh globalnej średniej,
+                zielony hosting redukuje emisje o 95%. Metryki Lighthouse: rozmiar strony, czas bootup JavaScript, typ hostingu.
               </p>
             </div>
 

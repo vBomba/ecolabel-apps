@@ -1066,14 +1066,27 @@ body {
   margin-bottom: 0.5rem;
   font-weight: 500;
 }
-.co2-section .co2-card > div:last-child {
+.co2-section .co2-card > div:first-child .co2-explanation {
+  font-size: 0.74375rem;
+  color: #8f8f8f;
+  font-weight: 400;
+  font-style: italic;
+}
+.co2-section .co2-card > div:nth-child(2) {
   font-size: 1.5rem;
   font-weight: 700;
   color: #00d084;
+  margin-bottom: 0.5rem;
 }
-.co2-section > p:last-child {
+.co2-section .co2-card .co2-detail {
+  color: #8f8f8f;
+  font-size: 0.765625rem;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+.co2-section > .co2-note {
   color: #5a5a5a;
-  font-size: 0.875rem;
+  font-size: 0.765625rem;
   margin-top: 1rem;
   font-style: italic;
   text-align: center;

@@ -25,7 +25,7 @@ $energy-colors: (
   // Żółty
   E: #ff9800,
   // Pomarańczowy
-  F: #ff5722 // Czerwony,,,,,,,,,,,,,
+  F: #ff5722 // Czerwony,,,,,,,,,,,,,,,
 );
 
 // Reset i podstawowe style
@@ -684,18 +684,33 @@ body {
       font-size: $font-size-sm;
       margin-bottom: $spacing-sm;
       font-weight: $font-weight-medium;
+      
+      .co2-explanation {
+        font-size: $font-size-sm * 0.85;
+        color: $gray-500;
+        font-weight: $font-weight-normal;
+        font-style: italic;
+      }
     }
 
-    > div:last-child {
+    > div:nth-child(2) {
       font-size: $font-size-xxl;
       font-weight: $font-weight-bold;
       color: $accent-color;
+      margin-bottom: $spacing-sm;
+    }
+
+    .co2-detail {
+      color: $gray-500;
+      font-size: $font-size-sm * 0.875;
+      margin-top: $spacing-sm;
+      line-height: 1.5;
     }
   }
 
-  > p:last-child {
+  > .co2-note {
     color: $gray-600;
-    font-size: $font-size-sm;
+    font-size: $font-size-sm * 0.875;
     margin-top: $spacing-md;
     font-style: italic;
     text-align: center;

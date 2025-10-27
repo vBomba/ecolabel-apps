@@ -328,6 +328,23 @@ function showResults(result) {
   // Update recommendations
   updateRecommendations(result.ecoData);
 
+  // Update CO2 emissions
+  if (result.ecoData.co2) {
+    const co2Total = document.getElementById("co2-total");
+    const co2Trees = document.getElementById("co2-trees");
+    const co2Cars = document.getElementById("co2-cars");
+    
+    if (co2Total) {
+      co2Total.textContent = `${result.ecoData.co2.totalCO2.toFixed(4)} kg`;
+    }
+    if (co2Trees) {
+      co2Trees.textContent = result.ecoData.co2.equivalentTrees.toFixed(2);
+    }
+    if (co2Cars) {
+      co2Cars.textContent = `${result.ecoData.co2.equivalentCarsKm.toFixed(2)} km`;
+    }
+  }
+
   // Update score circle animation
   setTimeout(() => {
     const percentage = (ecoScore / 100) * 360;
@@ -725,6 +742,23 @@ function showMultiPageResults(result) {
   const pagesContainer =
     document.getElementById("pages-list") || createPagesContainer();
   pagesContainer.innerHTML = pagesHtml;
+
+  // Update CO2 emissions for multi-page results
+  if (data.co2) {
+    const co2Total = document.getElementById("co2-total");
+    const co2Trees = document.getElementById("co2-trees");
+    const co2Cars = document.getElementById("co2-cars");
+    
+    if (co2Total) {
+      co2Total.textContent = `${data.co2.totalCO2.toFixed(4)} kg`;
+    }
+    if (co2Trees) {
+      co2Trees.textContent = data.co2.equivalentTrees.toFixed(2);
+    }
+    if (co2Cars) {
+      co2Cars.textContent = `${data.co2.equivalentCarsKm.toFixed(2)} km`;
+    }
+  }
 
   updateRecommendations(data);
 }

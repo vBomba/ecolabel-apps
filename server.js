@@ -25,6 +25,36 @@ function normalizeScore(value, min, max) {
   return Math.max(0, Math.min(100, ((max - value) / (max - min)) * 100));
 }
 
+// Obliczanie emisji CO2 na podstawie metryk strony
+function calculateCO2(ecoData) {
+  // Bazowe wartości dla różnych komponentów
+  const CO2_PER_BYTE_GREEN = 0.000024 / 1024; // kg CO2/KB dla zielonego hostingu
+  const CO2_PER_BYTE_NORMAL = 0.000048 / 1024; // kg CO2/KB dla normalnego hostingu
+  const CO2_PER_MS_CPU = 0.000001; // kg CO2 na milisekundę CPU time
+  
+  const isGreenHosting = ecoData.hostingGreen > 0;
+  const co2PerByte = isGreenHosting ? CO2_PER_BYTE_GREEN : CO2_PER_BYTE_NORMAL;
+  
+  // Oblicz emisję dla danych
+  const dataCO2 = ecoData.totalBytes * co2PerByte;
+  
+  // Dodatkowa emisja za CPU time (czas ładowania strony)
+  const bootupCO2 = ecoData.bootupTime * CO2_PER_MS_CPU;
+  
+  // Całkowita emisja
+  const totalCO2 = dataCO2 + bootupCO2;
+  
+  return {
+    totalCO2, // w kg
+    dataCO2,
+    bootupCO2,
+    co2PerByte,
+    equivalentTrees: totalCO2 / 0.021, // Średnia roczna absorpcja jednego drzewa (kg CO2)
+    equivalentCarsKm: totalCO2 / 0.120, // Średnia emisja na km przejechany samochodem
+    perVisit: totalCO2, // Emisja na jedno odwiedzenie strony
+  };
+}
+
 function calculateEcoScore(report) {
   const performance = report.categories.performance.score * 100;
   const totalBytes = report.audits["total-byte-weight"].numericValue;
@@ -44,7 +74,7 @@ function calculateEcoScore(report) {
       normalizeScore(cls, 0, 0.25) * 0.05
   );
 
-  return {
+  const ecoData = {
     ecoScore,
     performance,
     totalBytes,
@@ -52,6 +82,14 @@ function calculateEcoScore(report) {
     hostingGreen,
     imageOptimization,
     cls,
+  };
+
+  // Oblicz emisję CO2
+  const co2Data = calculateCO2(ecoData);
+
+  return {
+    ...ecoData,
+    co2: co2Data,
   };
 }
 
@@ -83,7 +121,7 @@ function aggregateEcoScores(ecoScoresArray) {
 
   const avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
 
-  return {
+  const ecoData = {
     ecoScore: Math.round(avg(ecoScoresArray.map((e) => e.ecoScore))),
     performance: avg(ecoScoresArray.map((e) => e.performance)),
     totalBytes: avg(ecoScoresArray.map((e) => e.totalBytes)),
@@ -93,6 +131,14 @@ function aggregateEcoScores(ecoScoresArray) {
       ? 100
       : 0,
     cls: avg(ecoScoresArray.map((e) => e.cls)),
+  };
+
+  // Oblicz CO2 dla agregowanych danych
+  const co2Data = calculateCO2(ecoData);
+
+  return {
+    ...ecoData,
+    co2: co2Data,
   };
 }
 

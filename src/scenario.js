@@ -11,27 +11,28 @@ class Scenario {
   async run() {
     console.log(`=== ${this.name} ===`);
 
-    const driver = await Config.getDriver();
+    const browser = await Config.getBrowser();
+    const page = await browser.newPage();
 
     try {
       // Przejdź do URL
-      await driver.get(this.url);
+      await page.goto(this.url, { waitUntil: "networkidle2", timeout: 30000 });
 
       // Czekaj na załadowanie strony
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Pobierz metryki Chrome DevTools
-      const cdp = await driver.createCDPConnection("page");
+      // Pobierz metryki wydajności używając CDP
+      const client = await page.target().createCDPSession();
 
       try {
         // Włącz domenę Performance
-        await cdp.send("Performance.enable");
+        await client.send("Performance.enable");
 
         // Czekaj na zebranie metryk
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // Pobierz metryki wydajności używając CDP
-        const performanceMetrics = await cdp.send("Performance.getMetrics");
+        const performanceMetrics = await client.send("Performance.getMetrics");
 
         if (performanceMetrics && performanceMetrics.metrics) {
           performanceMetrics.metrics.forEach((metric) => {
@@ -64,18 +65,24 @@ class Scenario {
 
       // Metryki związane z GPU
       this.metrics.gpuCompositorEnabled = await this.isGpuCompositorEnabled(
-        driver
+        page
       );
 
       // Dodaj metryki pamięci JS z konsoli przeglądarki
       try {
-        const jsMetrics = await driver.executeScript(`
+        const jsMetrics = await page.evaluate(() => {
           return {
-            jsHeapUsedSize: performance.memory ? performance.memory.usedJSHeapSize : 0,
-            jsHeapTotalSize: performance.memory ? performance.memory.totalJSHeapSize : 0,
-            jsHeapLimit: performance.memory ? performance.memory.jsHeapSizeLimit : 0
+            jsHeapUsedSize: performance.memory
+              ? performance.memory.usedJSHeapSize
+              : 0,
+            jsHeapTotalSize: performance.memory
+              ? performance.memory.totalJSHeapSize
+              : 0,
+            jsHeapLimit: performance.memory
+              ? performance.memory.jsHeapSizeLimit
+              : 0,
           };
-        `);
+        });
 
         this.metrics.JSHeapUsedSize = jsMetrics.jsHeapUsedSize || 0;
         this.metrics.JSHeapTotalSize = jsMetrics.jsHeapTotalSize || 0;
@@ -88,17 +95,20 @@ class Scenario {
       // Dodaj CPUTime jako syntetyczną metrykę (używając ThreadTime jeśli dostępne)
       this.metrics.CPUTime =
         this.metrics.ThreadTime || this.metrics.TaskDuration || 0;
+
+      await page.close();
     } catch (error) {
-      console.error(`Error running scenario ${this.name}:`, error);
+      console.error(`Błąd uruchamiania scenariusza ${this.name}:`, error);
+      await page.close().catch(() => {});
       throw error;
     }
   }
 
-  async isGpuCompositorEnabled(driver) {
+  async isGpuCompositorEnabled(page) {
     try {
-      const jsCheck =
-        "window.chrome && window.chrome.gpuBenchmarking !== undefined";
-      const result = await driver.executeScript(`return ${jsCheck}`);
+      const result = await page.evaluate(() => {
+        return window.chrome && window.chrome.gpuBenchmarking !== undefined;
+      });
       return result === true;
     } catch (e) {
       return false;

@@ -425,8 +425,8 @@ app.post("/api/run-scenarios", async (req, res) => {
 
     console.log(`🔗 Testing ${urlsToTest.length} URLs`);
 
-    // Inicjalizuj driver przed uruchomieniem scenariuszy
-    await Config.initDriver();
+    // Inicjalizuj przeglądarkę przed uruchomieniem scenariuszy
+    await Config.initBrowser();
 
     for (const item of urlsToTest) {
       console.log(`⏳ Creating scenario for: ${item.name}`);
@@ -441,21 +441,28 @@ app.post("/api/run-scenarios", async (req, res) => {
 
     console.log("✅ All scenarios completed");
 
-    // Zamknij sterownik
-    await Config.quitDriver();
-    console.log("🔒 Driver closed");
+    // Zamknij przeglądarkę
+    await Config.quitBrowser();
+    console.log("🔒 Browser closed");
+
+    // Konwertuj scenariusze na zwykłe obiekty do wysłania
+    const results = scenarios.map((s) => ({
+      name: s.name,
+      url: s.url,
+      metrics: s.metrics,
+    }));
 
     // Zwróć dane scenariuszy
-    res.json(scenarios);
+    res.json(results);
   } catch (error) {
     console.error("❌ Error running scenarios:", error);
     console.error("Stack trace:", error.stack);
 
-    // Upewnij się, że driver jest zamknięty w przypadku błędu
+    // Upewnij się, że przeglądarka jest zamknięta w przypadku błędu
     try {
-      await Config.quitDriver();
+      await Config.quitBrowser();
     } catch (quitError) {
-      console.error("Error closing driver:", quitError);
+      console.error("Error closing browser:", quitError);
     }
 
     res.status(500).json({

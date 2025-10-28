@@ -1,85 +1,80 @@
-import { Builder } from "selenium-webdriver";
-import { Options as ChromeOptions } from "selenium-webdriver/chrome.js";
+import puppeteer from "puppeteer-core";
 import { getBrowserPath } from "../utils.js";
 
 class Config {
-  static driver = null;
+  static browser = null;
 
-  static async initDriver() {
-    if (this.driver) {
-      return this.driver;
+  static async initBrowser() {
+    if (this.browser) {
+      return this.browser;
     }
 
     try {
-      const options = new ChromeOptions();
-
-      // Ustaw ścieżkę do Chrome
       const browserPath = getBrowserPath();
-      if (browserPath) {
-        options.setChromeBinaryPath(browserPath);
-      }
 
-      options.addArguments("--no-sandbox");
-      options.addArguments("--disable-dev-shm-usage");
-      options.addArguments("--disable-gpu");
-      options.addArguments("--disable-background-networking");
-      options.addArguments("--disable-background-timer-throttling");
-      options.addArguments("--disable-backgrounding-occluded-windows");
-      options.addArguments("--disable-breakpad");
-      options.addArguments("--disable-client-side-phishing-detection");
-      options.addArguments("--disable-component-update");
-      options.addArguments("--disable-default-apps");
-      options.addArguments("--disable-features=TranslateUI");
-      options.addArguments("--disable-hang-monitor");
-      options.addArguments("--disable-ipc-flooding-protection");
-      options.addArguments("--disable-popup-blocking");
-      options.addArguments("--disable-prompt-on-repost");
-      options.addArguments("--disable-renderer-backgrounding");
-      options.addArguments("--disable-sync");
-      options.addArguments("--disable-translate");
-      options.addArguments("--metrics-recording-only");
-      options.addArguments("--mute-audio");
-      options.addArguments("--no-first-run");
-      options.addArguments("--safebrowsing-disable-auto-update");
-      options.addArguments("--enable-automation");
-      options.addArguments("--password-store=basic");
-      options.addArguments("--use-mock-keychain");
-      options.addArguments("--enable-memory-info");
-      options.addArguments("--disable-infobars");
-      options.addArguments("--disable-logging");
-      options.addArguments("--hide-scrollbars");
-      options.addArguments("--disable-extensions");
-      options.addArguments("--disable-plugins-discovery");
-      options.addArguments(
-        "--disable-component-extensions-with-background-pages"
-      );
-      options.addArguments("--disable-extensions-file-access-check");
-      options.addArguments("--disable-gcm");
-      options.addArguments("--disable-service-worker-autostart");
+      this.browser = await puppeteer.launch({
+        executablePath: browserPath || puppeteer.executablePath(),
+        headless: false, // Pokaż przeglądarkę podczas testów
+        slowMo: 100, // Zwolnij akcje o 100ms dla lepszej widoczności
+        devtools: false, // Otwórz DevTools (opcjonalne)
+        defaultViewport: { width: 1920, height: 1080 }, // Ustaw rozmiar okna
+        args: [
+          "--no-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+          "--disable-background-networking",
+          "--disable-background-timer-throttling",
+          "--disable-backgrounding-occluded-windows",
+          "--disable-breakpad",
+          "--disable-client-side-phishing-detection",
+          "--disable-component-update",
+          "--disable-default-apps",
+          "--disable-features=TranslateUI",
+          "--disable-hang-monitor",
+          "--disable-ipc-flooding-protection",
+          "--disable-popup-blocking",
+          "--disable-prompt-on-repost",
+          "--disable-renderer-backgrounding",
+          "--disable-sync",
+          "--disable-translate",
+          "--metrics-recording-only",
+          "--mute-audio",
+          "--no-first-run",
+          "--safebrowsing-disable-auto-update",
+          "--enable-automation",
+          "--password-store=basic",
+          "--use-mock-keychain",
+          "--enable-memory-info",
+          "--disable-infobars",
+          "--disable-logging",
+          "--hide-scrollbars",
+          "--disable-extensions",
+          "--disable-plugins-discovery",
+          "--disable-component-extensions-with-background-pages",
+          "--disable-extensions-file-access-check",
+          "--disable-gcm",
+          "--disable-service-worker-autostart",
+        ],
+      });
 
-      this.driver = await new Builder()
-        .forBrowser("chrome")
-        .setChromeOptions(options)
-        .build();
-
-      return this.driver;
+      return this.browser;
     } catch (error) {
-      console.error("Error initializing WebDriver:", error);
+      console.error("Błąd inicjalizacji przeglądarki:", error);
       throw error;
     }
   }
 
-  static async getDriver() {
-    if (!this.driver) {
-      await this.initDriver();
+  static async getBrowser() {
+    if (!this.browser) {
+      await this.initBrowser();
     }
-    return this.driver;
+    return this.browser;
   }
 
-  static async quitDriver() {
-    if (this.driver) {
-      await this.driver.quit();
-      this.driver = null;
+  static async quitBrowser() {
+    if (this.browser) {
+      await this.browser.close();
+      this.browser = null;
     }
   }
 }

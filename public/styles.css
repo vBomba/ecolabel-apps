@@ -504,6 +504,7 @@ body {
   backdrop-filter: none;
   border: 1px solid #d9d9d9;
   animation: fadeIn 1s ease-out;
+  margin-bottom: 1rem;
 }
 .multi-page-section h3 {
   font-family: "Ndot-Regular", sans-serif;
@@ -1028,6 +1029,67 @@ body {
   color: #00d084;
   font-weight: 700;
   font-size: 1.125rem;
+}
+
+.co2-section {
+  background: #f9f9f9;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid #d9d9d9;
+  margin: 3rem 0;
+}
+.co2-section h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #000000;
+  margin-bottom: 1.5rem;
+  color: #000000;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-size: 1rem;
+}
+.co2-section .co2-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.co2-section .co2-card {
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
+}
+.co2-section .co2-card > div:first-child {
+  color: #5a5a5a;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+.co2-section .co2-card > div:first-child .co2-explanation {
+  font-size: 0.74375rem;
+  color: #8f8f8f;
+  font-weight: 400;
+  font-style: italic;
+}
+.co2-section .co2-card > div:nth-child(2) {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #00d084;
+  margin-bottom: 0.5rem;
+}
+.co2-section .co2-card .co2-detail {
+  color: #8f8f8f;
+  font-size: 0.765625rem;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+.co2-section > .co2-note {
+  color: #5a5a5a;
+  font-size: 0.765625rem;
+  margin-top: 1rem;
+  font-style: italic;
+  text-align: center;
 }
 
 .actions {

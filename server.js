@@ -25,6 +25,72 @@ function normalizeScore(value, min, max) {
   return Math.max(0, Math.min(100, ((max - value) / (max - min)) * 100));
 }
 
+// Obliczanie emisji CO2 na podstawie metryk Lighthouse
+// Metodologia bazowana na badaniach:
+// https://sustainablewebdesign.org/carbon-calculator/
+// https://www.websitecarbon.com/
+// https://github.com/thegreenwebfoundation/carbon.txt
+//
+// Kluczowe zasady:
+// 1. Emisja zależy od kraju w którym znajduje się serwer (mix energetyczny)
+// 2. Średnia globalna emisja: ~475g CO2/kWh
+// 3. Średnie zużycie energii: ~0.81 kWh/GB dla transmisji danych
+// 4. Średnie zużycie energii: ~0.1 kWh/GB dla przetwarzania na serwerze
+// 5. Zielony hosting zmniejsza emisje o ~95% (zakłada 100% OZE)
+//
+// Dla przeciętnej strony WWW (bez informacji o lokalizacji):
+// - 1 MB danych ≈ 0.001 kWh zużycia energii
+// - Średnia globalna emisja: 475g CO2/kWh
+// - Normalny hosting: ~0.475g CO2/MB
+// - Zielony hosting (100% OZE): ~0.024g CO2/MB (5% remaining grid factor)
+function calculateCO2(ecoData) {
+  // Konwersja: 1 MB = 1024 * 1024 bytes
+  const BYTES_PER_MB = 1024 * 1024;
+
+  // Średnie zużycie energii i emisja CO2
+  // Zgodnie z badaniami: 1GB = ~0.81 kWh, średnio 475g CO2/kWh
+  const KWH_PER_GB = 0.81; // kWh na GB przesyłu danych
+  const CO2_PER_KWH = 475; // g CO2/kWh (średnia globalna, 2024)
+  const GB_PER_MB = 1 / 1024; // konwersja MB na GB
+  const CO2_PER_MB_NORMAL = KWH_PER_GB * GB_PER_MB * CO2_PER_KWH; // g CO2/MB
+  const CO2_PER_MB_GREEN = CO2_PER_MB_NORMAL * 0.05; // 95% redukcja dla OZE
+
+  // Mnożnik dla bootup time - CPU intensywny task
+  const CPU_MULTIPLIER = 1.5; // CPU time = więcej energii serwera
+
+  // Sprawdź czy hosting jest zielony
+  const isGreenHosting = ecoData.hostingGreen > 0;
+  const co2PerMB = isGreenHosting ? CO2_PER_MB_GREEN : CO2_PER_MB_NORMAL;
+
+  // Oblicz emisję dla przesyłu danych (w gramach)
+  const dataSizeMB = ecoData.totalBytes / BYTES_PER_MB;
+  const dataCO2 = dataSizeMB * co2PerMB; // w gramach
+
+  // Emisja za bootup time (CPU intensywny)
+  // Bootup time to proxy dla zużycia CPU
+  const bootupSeconds = ecoData.bootupTime / 1000;
+  const bootupCO2 =
+    (dataSizeMB * co2PerMB * CPU_MULTIPLIER * bootupSeconds) / 5; // uśredniony czas bootup
+
+  // Całkowita emisja w gramach, konwersja na kg
+  const totalCO2Grams = dataCO2 + bootupCO2;
+  const totalCO2 = totalCO2Grams / 1000; // konwersja na kg
+
+  // Równoważniki
+  const EQUIVALENT_TREES = totalCO2 / 0.021; // Średnio jedno drzewo pochłania 21 kg CO2 rocznie
+  const EQUIVALENT_CARS_KM = totalCO2Grams / 120; // Średnio 120g CO2/km
+
+  return {
+    totalCO2, // w kg
+    dataCO2: dataCO2 / 1000, // w kg
+    bootupCO2: bootupCO2 / 1000, // w kg
+    dataSizeMB,
+    equivalentTrees: EQUIVALENT_TREES,
+    equivalentCarsKm: EQUIVALENT_CARS_KM,
+    perVisit: totalCO2, // Emisja na jedno odwiedzenie strony
+  };
+}
+
 function calculateEcoScore(report) {
   const performance = report.categories.performance.score * 100;
   const totalBytes = report.audits["total-byte-weight"].numericValue;
@@ -44,7 +110,7 @@ function calculateEcoScore(report) {
       normalizeScore(cls, 0, 0.25) * 0.05
   );
 
-  return {
+  const ecoData = {
     ecoScore,
     performance,
     totalBytes,
@@ -52,6 +118,14 @@ function calculateEcoScore(report) {
     hostingGreen,
     imageOptimization,
     cls,
+  };
+
+  // Oblicz emisję CO2
+  const co2Data = calculateCO2(ecoData);
+
+  return {
+    ...ecoData,
+    co2: co2Data,
   };
 }
 
@@ -83,7 +157,7 @@ function aggregateEcoScores(ecoScoresArray) {
 
   const avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
 
-  return {
+  const ecoData = {
     ecoScore: Math.round(avg(ecoScoresArray.map((e) => e.ecoScore))),
     performance: avg(ecoScoresArray.map((e) => e.performance)),
     totalBytes: avg(ecoScoresArray.map((e) => e.totalBytes)),
@@ -93,6 +167,14 @@ function aggregateEcoScores(ecoScoresArray) {
       ? 100
       : 0,
     cls: avg(ecoScoresArray.map((e) => e.cls)),
+  };
+
+  // Oblicz CO2 dla agregowanych danych
+  const co2Data = calculateCO2(ecoData);
+
+  return {
+    ...ecoData,
+    co2: co2Data,
   };
 }
 

@@ -25,7 +25,7 @@ $energy-colors: (
   // Żółty
   E: #ff9800,
   // Pomarańczowy
-  F: #ff5722 // Czerwony,,,,,,,,,,
+  F: #ff5722 // Czerwony,,,,,,,,,,,,,,,,,,
 );
 
 // Reset i podstawowe style
@@ -166,6 +166,7 @@ body {
   @include card-base;
   border: 1px solid $gray-300;
   @include fade-in(1s);
+  margin-bottom: 1rem;
 
   h3 {
     @include heading-3;
@@ -645,6 +646,74 @@ body {
       font-weight: $font-weight-bold;
       font-size: $font-size-lg;
     }
+  }
+}
+
+// Sekcja emisji CO2
+.co2-section {
+  background: $gray-50;
+  padding: $spacing-xl;
+  border-radius: $border-radius-lg;
+  border: 1px solid $gray-300;
+  margin: $spacing-xxl 0;
+
+  h4 {
+    @include heading-4;
+    margin-bottom: $spacing-lg;
+    color: $primary-color;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-size: $font-size-base;
+  }
+
+  .co2-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: $spacing-lg;
+    margin-bottom: $spacing-lg;
+  }
+
+  .co2-card {
+    background: $secondary-color;
+    padding: $spacing-lg;
+    border-radius: $border-radius-md;
+    border: 1px solid $gray-300;
+
+    > div:first-child {
+      color: $gray-600;
+      font-size: $font-size-sm;
+      margin-bottom: $spacing-sm;
+      font-weight: $font-weight-medium;
+
+      .co2-explanation {
+        font-size: $font-size-sm * 0.85;
+        color: $gray-500;
+        font-weight: $font-weight-normal;
+        font-style: italic;
+      }
+    }
+
+    > div:nth-child(2) {
+      font-size: $font-size-xxl;
+      font-weight: $font-weight-bold;
+      color: $accent-color;
+      margin-bottom: $spacing-sm;
+    }
+
+    .co2-detail {
+      color: $gray-500;
+      font-size: $font-size-sm * 0.875;
+      margin-top: $spacing-sm;
+      line-height: 1.5;
+    }
+  }
+
+  > .co2-note {
+    color: $gray-600;
+    font-size: $font-size-sm * 0.875;
+    margin-top: $spacing-md;
+    font-style: italic;
+    text-align: center;
   }
 }
 

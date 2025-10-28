@@ -10,12 +10,14 @@ class Scenario {
 
   async run() {
     console.log(`=== ${this.name} ===`);
+    console.log(`📍 URL: ${this.url}`);
 
     const browser = await Config.getBrowser();
     const page = await browser.newPage();
 
     try {
       // Przejdź do URL
+      console.log(`🌐 Navigating to: ${this.url}`);
       await page.goto(this.url, { waitUntil: "networkidle2", timeout: 30000 });
 
       // Czekaj na załadowanie strony
@@ -96,6 +98,7 @@ class Scenario {
       this.metrics.CPUTime =
         this.metrics.ThreadTime || this.metrics.TaskDuration || 0;
 
+      console.log(`✅ Scenariusz ${this.name} zakończony pomyślnie`);
       await page.close();
     } catch (error) {
       console.error(`Błąd uruchamiania scenariusza ${this.name}:`, error);

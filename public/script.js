@@ -328,6 +328,47 @@ function showResults(result) {
   // Update recommendations
   updateRecommendations(result.ecoData);
 
+  // Update CO2 emissions
+  if (result.ecoData.co2) {
+    const co2Total = document.getElementById("co2-total");
+    const co2Trees = document.getElementById("co2-trees");
+    const co2Cars = document.getElementById("co2-cars");
+
+    if (co2Total) {
+      // Wyświetl w odpowiedniej jednostce (mg dla małych wartości, g dla większych)
+      let co2Display = "";
+      const totalGrams = result.ecoData.co2.totalCO2 * 1000;
+      if (totalGrams < 1) {
+        co2Display = `${(totalGrams * 1000).toFixed(2)} mg`;
+      } else if (totalGrams < 1000) {
+        co2Display = `${totalGrams.toFixed(2)} g`;
+      } else {
+        co2Display = `${result.ecoData.co2.totalCO2.toFixed(4)} kg`;
+      }
+      co2Total.textContent = co2Display;
+    }
+    if (co2Trees) {
+      const trees = result.ecoData.co2.equivalentTrees;
+      if (trees < 1) {
+        co2Trees.textContent = trees.toFixed(4);
+      } else if (trees < 100) {
+        co2Trees.textContent = trees.toFixed(2);
+      } else {
+        co2Trees.textContent = trees.toFixed(0);
+      }
+    }
+    if (co2Cars) {
+      const km = result.ecoData.co2.equivalentCarsKm;
+      if (km < 0.01) {
+        co2Cars.textContent = `${(km * 1000).toFixed(1)} m`;
+      } else if (km < 1) {
+        co2Cars.textContent = `${km.toFixed(3)} km`;
+      } else {
+        co2Cars.textContent = `${km.toFixed(2)} km`;
+      }
+    }
+  }
+
   // Update score circle animation
   setTimeout(() => {
     const percentage = (ecoScore / 100) * 360;
@@ -726,6 +767,47 @@ function showMultiPageResults(result) {
     document.getElementById("pages-list") || createPagesContainer();
   pagesContainer.innerHTML = pagesHtml;
 
+  // Update CO2 emissions for multi-page results
+  if (data.co2) {
+    const co2Total = document.getElementById("co2-total");
+    const co2Trees = document.getElementById("co2-trees");
+    const co2Cars = document.getElementById("co2-cars");
+
+    if (co2Total) {
+      // Wyświetl w odpowiedniej jednostce (mg dla małych wartości, g dla większych)
+      let co2Display = "";
+      const totalGrams = data.co2.totalCO2 * 1000;
+      if (totalGrams < 1) {
+        co2Display = `${(totalGrams * 1000).toFixed(2)} mg`;
+      } else if (totalGrams < 1000) {
+        co2Display = `${totalGrams.toFixed(2)} g`;
+      } else {
+        co2Display = `${data.co2.totalCO2.toFixed(4)} kg`;
+      }
+      co2Total.textContent = co2Display;
+    }
+    if (co2Trees) {
+      const trees = data.co2.equivalentTrees;
+      if (trees < 1) {
+        co2Trees.textContent = trees.toFixed(4);
+      } else if (trees < 100) {
+        co2Trees.textContent = trees.toFixed(2);
+      } else {
+        co2Trees.textContent = trees.toFixed(0);
+      }
+    }
+    if (co2Cars) {
+      const km = data.co2.equivalentCarsKm;
+      if (km < 0.01) {
+        co2Cars.textContent = `${(km * 1000).toFixed(1)} m`;
+      } else if (km < 1) {
+        co2Cars.textContent = `${km.toFixed(3)} km`;
+      } else {
+        co2Cars.textContent = `${km.toFixed(2)} km`;
+      }
+    }
+  }
+
   updateRecommendations(data);
 }
 
@@ -898,6 +980,16 @@ async function loadResults() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(finalUrls),
     });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ error: "Unknown error occurred" }));
+      throw new Error(
+        errorData.error || `HTTP error! status: ${response.status}`
+      );
+    }
+
     const data = await response.json();
     chartsDiv.innerHTML = "";
 
@@ -1120,10 +1212,24 @@ async function loadResults() {
       );
     }
   } catch (err) {
-    chartsDiv.innerHTML =
-      "<p style='color:red;text-align:center;'>Błąd pobierania danych: " +
-      err +
-      "</p>";
+    console.error("Error loading results:", err);
+    const errorMessage = err.message || err.toString();
+    const errorDetails =
+      err.details || (err.stack ? err.stack.substring(0, 200) : "");
+    chartsDiv.innerHTML = `
+      <div style="padding: 2rem; background: rgba(255, 99, 132, 0.1); border-radius: 8px; border: 2px solid rgba(255, 99, 132, 0.3);">
+        <h3 style="color: #ff6b6b; margin-bottom: 1rem;">❌ Błąd podczas uruchamiania testów</h3>
+        <p style="color: #fff; margin-bottom: 0.5rem;"><strong>Błąd:</strong> ${errorMessage}</p>
+        ${
+          errorDetails
+            ? `<p style="color: rgba(255,255,255,0.7); font-size: 0.9rem; white-space: pre-wrap;">${errorDetails}</p>`
+            : ""
+        }
+        <p style="color: rgba(255,255,255,0.6); margin-top: 1rem; font-size: 0.9rem;">
+          Sprawdź konsolę serwera lub przeglądarki (F12) aby zobaczyć więcej szczegółów.
+        </p>
+      </div>
+    `;
   } finally {
     btnRunTests.disabled = false;
     btnRunTests.textContent = "Uruchom testy";

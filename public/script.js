@@ -39,7 +39,6 @@ const steps = {
 // --- Elementy wyników ---
 const analyzedUrl = document.getElementById("analyzed-url");
 const scoreValue = document.getElementById("score-value");
-const scoreGrade = document.getElementById("score-grade");
 const scoreDescription = document.getElementById("score-description");
 const scoreCircle = document.getElementById("score-circle");
 const performanceValue = document.getElementById("performance-value");
@@ -149,45 +148,75 @@ async function performAnalysis(url) {
       }
     }, 100);
 
-    // Etap 1: Ładowanie strony
+    // Etap 1: Ładowanie strony - z widoczną animacją
     updateProgress(5, `Ładowanie strony... (${elapsedSeconds}s)`, "loading");
+    await new Promise((resolve) => setTimeout(resolve, 1500)); // Widoczna pauza
 
-    const response = await fetch("/api/analyze", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ url }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    let response;
+    try {
+      response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url }),
+      });
+    } catch (fetchError) {
+      console.error("Błąd połączenia:", fetchError);
+      throw new Error(
+        `Błąd połączenia z serwerem: ${fetchError.message}. Sprawdź czy serwer działa na http://localhost:3000`
+      );
     }
 
-    // Etap 2: Analiza Lighthouse
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage;
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMessage = errorJson.error || errorText;
+      } catch {
+        errorMessage = errorText || `HTTP error! status: ${response.status}`;
+      }
+      throw new Error(errorMessage);
+    }
+
+    // Etap 2: Analiza Lighthouse - z widoczną zmianą kroku
+    elapsedSeconds = Math.floor((Date.now() - analysisStartTime) / 1000);
     updateProgress(
       30,
       `Uruchamianie analizy Lighthouse... (${elapsedSeconds}s)`,
       "lighthouse"
     );
+    await new Promise((resolve) => setTimeout(resolve, 1500)); // Widoczna pauza
 
     // Wait for the API response
-    const result = await response.json();
+    let result;
+    try {
+      result = await response.json();
+    } catch (jsonError) {
+      console.error("Błąd parsowania JSON:", jsonError);
+      throw new Error(
+        "Błąd parsowania odpowiedzi z serwera. Serwer zwrócił nieprawidłowy format danych."
+      );
+    }
 
+    // Etap 3: Obliczanie EcoScore - z widoczną zmianą kroku
     elapsedSeconds = Math.floor((Date.now() - analysisStartTime) / 1000);
     updateProgress(
       90,
       `Obliczanie EcoScore... (${elapsedSeconds}s)`,
       "analysis"
     );
+    await new Promise((resolve) => setTimeout(resolve, 1200)); // Widoczna pauza przed zakończeniem
 
     // Clear all intervals
     clearInterval(analysisTimerInterval);
     clearInterval(progressTextUpdateInterval);
 
-    // Etap 4: Complete
+    // Etap 4: Complete - z widoczną zmianą kroku
     elapsedSeconds = Math.floor((Date.now() - analysisStartTime) / 1000);
     updateProgress(100, `Analiza zakończona! (${elapsedSeconds}s)`, "complete");
+    await new Promise((resolve) => setTimeout(resolve, 800)); // Krótka pauza przed pokazaniem wyników
 
     // Store results
     currentReport = result;
@@ -208,33 +237,52 @@ async function performAnalysis(url) {
   }
 }
 
-// --- Zaktualizuj pasek postępu ---
+// --- Zaktualizuj pasek postępu z animacjami ---
 function updateProgress(percentage, text, activeStep) {
+  // Płynna animacja paska postępu
+  progressFill.style.transition = "width 0.6s ease-out";
   progressFill.style.width = `${percentage}%`;
 
   // Extract message without the time part (remove anything like "(Xs)")
   currentProgressMessage = text.replace(/ \(\d+s\)$/, "");
   progressText.textContent = text;
+  progressText.style.transition = "opacity 0.3s ease-in-out";
 
-  // Zaktualizuj stany kroków
+  // Animacja zmiany tekstu (krótkie mruganie)
+  progressText.style.opacity = "0.5";
+  setTimeout(() => {
+    progressText.style.opacity = "1";
+  }, 150);
+
+  // Zaktualizuj stany kroków z animacjami
   Object.values(steps).forEach((step) => {
     step.classList.remove("active", "completed");
+    step.style.transition = "all 0.4s ease-in-out";
   });
 
+  // Dodaj opóźnienia dla lepszej widoczności przejść
   if (activeStep === "loading") {
-    steps.loading.classList.add("active");
+    setTimeout(() => {
+      steps.loading.classList.add("active");
+    }, 100);
   } else if (activeStep === "lighthouse") {
-    steps.loading.classList.add("completed");
-    steps.lighthouse.classList.add("active");
+    setTimeout(() => {
+      steps.loading.classList.add("completed");
+      steps.lighthouse.classList.add("active");
+    }, 200);
   } else if (activeStep === "analysis") {
-    steps.loading.classList.add("completed");
-    steps.lighthouse.classList.add("completed");
-    steps.analysis.classList.add("active");
+    setTimeout(() => {
+      steps.loading.classList.add("completed");
+      steps.lighthouse.classList.add("completed");
+      steps.analysis.classList.add("active");
+    }, 300);
   } else if (activeStep === "complete") {
-    steps.loading.classList.add("completed");
-    steps.lighthouse.classList.add("completed");
-    steps.analysis.classList.add("completed");
-    steps.complete.classList.add("active");
+    setTimeout(() => {
+      steps.loading.classList.add("completed");
+      steps.lighthouse.classList.add("completed");
+      steps.analysis.classList.add("completed");
+      steps.complete.classList.add("active");
+    }, 400);
   }
 }
 
@@ -251,8 +299,6 @@ function showResults(result) {
   const grade = getGrade(ecoScore);
 
   scoreValue.textContent = ecoScore;
-  scoreGrade.textContent = grade;
-  scoreGrade.className = `grade-${grade}`;
   scoreCircle.className = `score-circle grade-${grade}`;
 
   // Podświetl odpowiednią klasę w etykiecie energetycznej
@@ -373,13 +419,14 @@ function showResults(result) {
   setTimeout(() => {
     const percentage = (ecoScore / 100) * 360;
 
-    // Get color based on grade for dynamic gradient
+    // Get color based on grade for dynamic gradient (używamy tych samych kolorów co w $energy-colors)
     const gradeColors = {
-      A: "#00d084", // Green
-      B: "#00c080", // Lighter green
-      C: "#ffa500", // Orange
-      D: "#ff8a50", // Orange-red
-      F: "#ff6b6b", // Red
+      A: "#00852e", // Ciemna zieleń
+      B: "#6cae3a", // Jasna zieleń
+      C: "#b0cc33", // Żółto-zielony
+      D: "#fdd835", // Żółty
+      E: "#ff9800", // Pomarańczowy
+      F: "#ff5722", // Czerwony
     };
 
     const fillColor = gradeColors[grade] || "#4CAF50";
@@ -724,8 +771,6 @@ function showMultiPageResults(result) {
   const label = result.ecoLabel;
 
   scoreValue.textContent = ecoScore;
-  scoreGrade.textContent = label.grade;
-  scoreGrade.className = `grade-${label.grade}`;
   scoreCircle.className = `score-circle grade-${label.grade}`;
   scoreCircle.style.background = `conic-gradient(${label.color} 0deg, ${
     label.color

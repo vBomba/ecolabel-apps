@@ -36,7 +36,7 @@ Zamiast analizować każdą stronę osobno, system:
 
 ### Metoda 1: Interfejs sieciowy
 
-1. Otwórz aplikację EcoLabel w przeglądarce
+1. Otwórz aplikację ZielonaPlaneta w przeglądarce
 2. Znajdź sekcję **"🌐 Analiza wielu stron witryny"**
 3. Wklej adresy URL (jeden na linię):
 

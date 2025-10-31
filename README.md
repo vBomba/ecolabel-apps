@@ -1,4 +1,4 @@
-# 🌱 EcoLabel - Analiza ekologiczności stron internetowych
+# 🌱 ZielonaPlaneta - Analiza ekologiczności stron internetowych
 
 Nowoczesny interfejs webowy do analizy ekologiczności stron internetowych wykorzystujący Lighthouse i własny algorytm EcoScore.
 
@@ -235,17 +235,17 @@ MIT License - zobacz plik LICENSE dla szczegółów.
 
 ## 👥 Autor
 
-**vBomba** - Deweloper EcoLabel
+**vBomba** - Deweloper ZielonaPlaneta
 
 ---
 
-🌱 **EcoLabel** - Analiza ekologiczności stron internetowych dla lepszej przyszłości!
+🌱 **ZielonaPlaneta** - Analiza ekologiczności stron internetowych dla lepszej przyszłości!
 
 ## 🆕 Nowa Funkcjonalność: Analiza Wielu Stron Serwisu
 
 ### O Funkcji
 
-EcoLabel teraz obsługuje analizę **kilku stron jednego serwisu** jednocześnie. Pozwala to na:
+ZielonaPlaneta teraz obsługuje analizę **kilku stron jednego serwisu** jednocześnie. Pozwala to na:
 
 - 📊 Analizę wielu URL-i z tego samego serwisu
 - 🏆 Wyznaczenie **wspólnej etykiety ekologiczności** dla całego serwisu

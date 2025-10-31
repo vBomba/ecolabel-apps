@@ -22,7 +22,32 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Obliczanie EcoScore
 function normalizeScore(value, min, max) {
-  return Math.max(0, Math.min(100, ((max - value) / (max - min)) * 100));
+  // Walidacja wartości wejściowych
+  if (value === null || value === undefined || isNaN(value)) {
+    console.warn(`normalizeScore: wartość jest null/undefined/NaN: ${value}`);
+    return 0;
+  }
+  if (min === max) {
+    console.warn(`normalizeScore: min === max (${min}), zwracam 50`);
+    return 50; // Zwróć średnią wartość jeśli zakres jest zerowy
+  }
+
+  // Normalizacja: im mniejsza wartość (np. totalBytes, bootupTime, cls), tym lepszy wynik
+  // Formuła: ((max - value) / (max - min)) * 100
+  let normalized = ((max - value) / (max - min)) * 100;
+
+  // Ograniczenie do zakresu 0-100
+  normalized = Math.max(0, Math.min(100, normalized));
+
+  // Sprawdzenie czy nie mamy NaN
+  if (isNaN(normalized)) {
+    console.warn(
+      `normalizeScore: wynik jest NaN dla value=${value}, min=${min}, max=${max}`
+    );
+    return 0;
+  }
+
+  return normalized;
 }
 
 // Obliczanie emisji CO2 na podstawie metryk Lighthouse
@@ -44,6 +69,12 @@ function normalizeScore(value, min, max) {
 // - Normalny hosting: ~0.475g CO2/MB
 // - Zielony hosting (100% OZE): ~0.024g CO2/MB (5% remaining grid factor)
 function calculateCO2(ecoData) {
+  // Walidacja danych wejściowych
+  if (!ecoData) {
+    console.error("❌ calculateCO2: brak danych ecoData");
+    throw new Error("Brak danych do obliczenia emisji CO2");
+  }
+
   // Konwersja: 1 MB = 1024 * 1024 bytes
   const BYTES_PER_MB = 1024 * 1024;
 
@@ -58,57 +89,286 @@ function calculateCO2(ecoData) {
   // Mnożnik dla bootup time - CPU intensywny task
   const CPU_MULTIPLIER = 1.5; // CPU time = więcej energii serwera
 
+  // Walidacja wartości z ecoData
+  let totalBytes = Number(ecoData.totalBytes) || 0;
+  let bootupTime = Number(ecoData.bootupTime) || 0;
+  const hostingGreen = Number(ecoData.hostingGreen) || 0;
+
+  // Ustaw minimalne wartości aby uniknąć zerowych obliczeń
+  // Minimalne wartości bazują na typowych wartościach dla małych stron
+  const MIN_BYTES = 1000; // 1 KB minimum
+  const MIN_BOOTUP_TIME = 10; // 10ms minimum
+
+  if (totalBytes === 0 || totalBytes < MIN_BYTES) {
+    console.warn(
+      "⚠️ calculateCO2: totalBytes jest zerowe lub bardzo małe, używam minimum:",
+      {
+        original: totalBytes,
+        using: MIN_BYTES,
+      }
+    );
+    totalBytes = MIN_BYTES;
+  }
+
+  // Poprawka: sprawdzamy czy bootupTime jest mniejsze niż minimum, ale tylko jeśli jest dodatnie
+  if (bootupTime === 0) {
+    console.warn("⚠️ calculateCO2: bootupTime jest zerowe, używam minimum:", {
+      original: bootupTime,
+      using: MIN_BOOTUP_TIME,
+    });
+    bootupTime = MIN_BOOTUP_TIME;
+  } else if (bootupTime > 0 && bootupTime < MIN_BOOTUP_TIME) {
+    console.warn(
+      "⚠️ calculateCO2: bootupTime jest bardzo małe, używam minimum:",
+      {
+        original: bootupTime,
+        using: MIN_BOOTUP_TIME,
+      }
+    );
+    bootupTime = MIN_BOOTUP_TIME;
+  }
+
+  if (isNaN(totalBytes) || isNaN(bootupTime)) {
+    console.error("❌ calculateCO2: nieprawidłowe wartości:", {
+      totalBytes,
+      bootupTime,
+      hostingGreen,
+      rawEcoData: ecoData,
+    });
+    throw new Error("Nieprawidłowe wartości metryk dla obliczenia CO2");
+  }
+
   // Sprawdź czy hosting jest zielony
-  const isGreenHosting = ecoData.hostingGreen > 0;
+  const isGreenHosting = hostingGreen > 0;
   const co2PerMB = isGreenHosting ? CO2_PER_MB_GREEN : CO2_PER_MB_NORMAL;
 
   // Oblicz emisję dla przesyłu danych (w gramach)
-  const dataSizeMB = ecoData.totalBytes / BYTES_PER_MB;
+  const dataSizeMB = totalBytes / BYTES_PER_MB;
   const dataCO2 = dataSizeMB * co2PerMB; // w gramach
 
   // Emisja za bootup time (CPU intensywny)
-  // Bootup time to proxy dla zużycia CPU
-  const bootupSeconds = ecoData.bootupTime / 1000;
-  const bootupCO2 =
-    (dataSizeMB * co2PerMB * CPU_MULTIPLIER * bootupSeconds) / 5; // uśredniony czas bootup
+  // Bootup time reprezentuje czas przetwarzania JavaScript w przeglądarce
+  // Według metodologii: przetwarzanie używa ~0.1 kWh/GB danych (różne od transferu 0.81 kWh/GB)
+  // Bootup time jest proxy dla intensywności przetwarzania - im dłuższy, tym więcej energii CPU
+  const bootupSeconds = bootupTime / 1000;
+
+  // Energia przetwarzania zależy od rozmiaru danych i czasu CPU
+  // Wzór bazuje na: 0.1 kWh/GB dla przetwarzania * czas bootup * mnożnik CPU
+  const PROCESSING_KWH_PER_GB = 0.1; // kWh/GB dla przetwarzania (zgodnie z komentarzem linia 63)
+  const PROCESSING_CO2_PER_GB = PROCESSING_KWH_PER_GB * CO2_PER_KWH; // g CO2/GB dla przetwarzania
+  const PROCESSING_CO2_PER_MB = PROCESSING_CO2_PER_GB / 1024; // g CO2/MB
+
+  // Bootup CO2 = energia przetwarzania danych * współczynnik czasu bootup * mnożnik CPU
+  // Bootup seconds reprezentuje czas przetwarzania, więc mnożymy przez niego
+  // Używamy dataSizeMB jako bazę, bo przetwarzamy te dane przez bootupSeconds
+  const baseProcessingCO2 = dataSizeMB * PROCESSING_CO2_PER_MB; // energia dla przetwarzania danych
+  const bootupCO2 = baseProcessingCO2 * bootupSeconds * CPU_MULTIPLIER; // w gramach
+
+  // Uwaga: bootupCO2 jest mniejszy niż dataCO2, bo przetwarzanie (0.1 kWh/GB)
+  // zużywa mniej energii niż transfer (0.81 kWh/GB)
 
   // Całkowita emisja w gramach, konwersja na kg
   const totalCO2Grams = dataCO2 + bootupCO2;
   const totalCO2 = totalCO2Grams / 1000; // konwersja na kg
 
+  // Sprawdzenie czy wyniki są poprawne
+  if (isNaN(totalCO2) || isNaN(dataCO2) || isNaN(bootupCO2)) {
+    console.error("❌ calculateCO2: wynik obliczenia jest NaN:", {
+      totalCO2,
+      dataCO2,
+      bootupCO2,
+      dataSizeMB,
+      bootupSeconds,
+    });
+    throw new Error("Błąd obliczania emisji CO2 - wynik NaN");
+  }
+
   // Równoważniki
   const EQUIVALENT_TREES = totalCO2 / 0.021; // Średnio jedno drzewo pochłania 21 kg CO2 rocznie
   const EQUIVALENT_CARS_KM = totalCO2Grams / 120; // Średnio 120g CO2/km
 
-  return {
-    totalCO2, // w kg
-    dataCO2: dataCO2 / 1000, // w kg
-    bootupCO2: bootupCO2 / 1000, // w kg
-    dataSizeMB,
-    equivalentTrees: EQUIVALENT_TREES,
-    equivalentCarsKm: EQUIVALENT_CARS_KM,
-    perVisit: totalCO2, // Emisja na jedno odwiedzenie strony
+  const result = {
+    totalCO2: Math.max(0, totalCO2), // w kg, upewnij się że nie jest ujemne
+    dataCO2: Math.max(0, dataCO2 / 1000), // w kg
+    bootupCO2: Math.max(0, bootupCO2 / 1000), // w kg
+    dataSizeMB: Math.max(0, dataSizeMB),
+    equivalentTrees: Math.max(0, EQUIVALENT_TREES),
+    equivalentCarsKm: Math.max(0, EQUIVALENT_CARS_KM),
+    perVisit: Math.max(0, totalCO2), // Emisja na jedno odwiedzenie strony
   };
+
+  // Sprawdzenie czy wynik nie jest zbyt mały (może być problem z precyzją)
+  if (result.totalCO2 === 0 && totalCO2 > 0) {
+    console.warn(
+      "⚠️ calculateCO2: totalCO2 został zaokrąglony do 0, oryginalna wartość:",
+      totalCO2
+    );
+    // Jeśli wartość jest bardzo mała ale dodatnia, ustaw minimalną wartość
+    result.totalCO2 = Math.max(totalCO2, 1e-10); // bardzo mała wartość ale nie zero
+  }
+
+  // Formatowanie z lepszą precyzją dla bardzo małych wartości
+  const formatCO2 = (value) => {
+    if (value === 0 || value < 1e-6) {
+      return value < 1e-9
+        ? `${value.toExponential(2)} kg`
+        : `${value.toFixed(9)} kg`;
+    }
+    return `${value.toFixed(6)} kg`;
+  };
+
+  const formatTrees = (value) => {
+    if (value === 0 || value < 1e-6) {
+      return value < 1e-10 ? value.toExponential(2) : value.toFixed(8);
+    }
+    return value.toFixed(6);
+  };
+
+  const formatCarsKm = (value) => {
+    if (value === 0 || value < 1e-6) {
+      return value < 1e-10
+        ? `${value.toExponential(2)} km`
+        : `${value.toFixed(8)} km`;
+    }
+    return `${value.toFixed(6)} km`;
+  };
+
+  console.log("🌍 Obliczona emisja CO2:", {
+    totalCO2: formatCO2(result.totalCO2),
+    dataCO2: formatCO2(result.dataCO2),
+    bootupCO2: formatCO2(result.bootupCO2),
+    dataSizeMB: `${result.dataSizeMB.toFixed(2)} MB`,
+    equivalentTrees: formatTrees(result.equivalentTrees),
+    equivalentCarsKm: formatCarsKm(result.equivalentCarsKm),
+    isGreenHosting,
+    // Szczegóły obliczeń dla debugowania
+    inputData: {
+      totalBytes: ecoData.totalBytes,
+      bootupTime: ecoData.bootupTime,
+      hostingGreen: ecoData.hostingGreen,
+    },
+    calculations: {
+      dataSizeMB: dataSizeMB.toFixed(4),
+      dataCO2Grams: dataCO2.toFixed(4),
+      bootupSeconds: bootupSeconds.toFixed(4),
+      bootupCO2Grams: bootupCO2.toFixed(4),
+      totalCO2Grams: totalCO2Grams.toFixed(4),
+      EQUIVALENT_TREES_raw: EQUIVALENT_TREES,
+      EQUIVALENT_CARS_KM_raw: EQUIVALENT_CARS_KM,
+    },
+  });
+
+  return result;
 }
 
 function calculateEcoScore(report) {
-  const performance = report.categories.performance.score * 100;
-  const totalBytes = report.audits["total-byte-weight"].numericValue;
-  const bootupTime = report.audits["bootup-time"].numericValue;
-  const hostingGreen =
-    report.audits["uses-green-hosting"]?.score === 1 ? 100 : 0;
-  const imageOptimization =
-    report.audits["uses-optimized-images"]?.score === 1 ? 100 : 0;
-  const cls = report.audits["cumulative-layout-shift"].numericValue;
+  // Walidacja i pobranie wartości z raportu
+  let performanceScore = report.categories?.performance?.score;
 
+  // Jeśli performance score nie jest dostępne, spróbuj użyć metryk jako fallback
+  if (
+    performanceScore === null ||
+    performanceScore === undefined ||
+    isNaN(performanceScore)
+  ) {
+    console.warn(
+      "⚠️ Brak wartości performance score w raporcie, próbuję obliczyć z metryk"
+    );
+
+    // Spróbuj obliczyć performance z metryk Core Web Vitals jeśli są dostępne
+    const fcp = report.audits?.["first-contentful-paint"]?.numericValue;
+    const lcp = report.audits?.["largest-contentful-paint"]?.numericValue;
+    const fid =
+      report.audits?.["max-potential-fid"]?.numericValue ||
+      report.audits?.["total-blocking-time"]?.numericValue;
+    const cls = report.audits?.["cumulative-layout-shift"]?.numericValue ?? 0;
+
+    // Jeśli mamy jakieś metryki, użyj ich do oszacowania performance
+    if (fcp || lcp || fid) {
+      // Proste oszacowanie: im lepsze metryki, tym wyższy score
+      let estimatedScore = 50; // start from middle
+
+      if (fcp && fcp < 1800) estimatedScore += 15; // good FCP
+      if (fcp && fcp < 3000) estimatedScore += 10; // needs improvement
+
+      if (lcp && lcp < 2500) estimatedScore += 15; // good LCP
+      if (lcp && lcp < 4000) estimatedScore += 10;
+
+      if (fid && fid < 100) estimatedScore += 10;
+
+      if (cls && cls < 0.1) estimatedScore += 10;
+
+      performanceScore = Math.min(1, Math.max(0, estimatedScore / 100));
+      console.log(
+        `📊 Obliczony szacunkowy performance score: ${(
+          performanceScore * 100
+        ).toFixed(2)}`
+      );
+    } else {
+      // Jeśli nie ma żadnych metryk, użyj domyślnej wartości
+      console.warn(
+        "⚠️ Brak metryk do oszacowania performance, używam wartości domyślnej 50"
+      );
+      performanceScore = 0.5; // 50/100 jako domyślna wartość
+    }
+  }
+
+  const performance = performanceScore * 100;
+
+  const totalBytes = report.audits?.["total-byte-weight"]?.numericValue ?? 0;
+  const bootupTime = report.audits?.["bootup-time"]?.numericValue ?? 0;
+  const hostingGreen =
+    report.audits?.["uses-green-hosting"]?.score === 1 ? 100 : 0;
+  const imageOptimization =
+    report.audits?.["uses-optimized-images"]?.score === 1 ? 100 : 0;
+  const cls = report.audits?.["cumulative-layout-shift"]?.numericValue ?? 0;
+
+  // Logowanie wartości dla debugowania
+  console.log("📊 Metryki Lighthouse:", {
+    performance: performance.toFixed(2),
+    totalBytes: totalBytes.toFixed(0),
+    bootupTime: bootupTime.toFixed(0),
+    hostingGreen,
+    imageOptimization,
+    cls: cls.toFixed(4),
+  });
+
+  // Obliczenie znormalizowanych wartości
+  const normalizedBytes = normalizeScore(totalBytes, 0, 1000000);
+  const normalizedBootup = normalizeScore(bootupTime, 0, 1000);
+  const normalizedCls = normalizeScore(cls, 0, 0.25);
+
+  console.log("📈 Znormalizowane wartości:", {
+    normalizedBytes: normalizedBytes.toFixed(2),
+    normalizedBootup: normalizedBootup.toFixed(2),
+    normalizedCls: normalizedCls.toFixed(2),
+  });
+
+  // Obliczenie EcoScore z wagami
   const ecoScore = Math.round(
     performance * 0.4 +
-      normalizeScore(totalBytes, 0, 1000000) * 0.2 +
-      normalizeScore(bootupTime, 0, 1000) * 0.15 +
+      normalizedBytes * 0.2 +
+      normalizedBootup * 0.15 +
       hostingGreen * 0.1 +
       imageOptimization * 0.1 +
-      normalizeScore(cls, 0, 0.25) * 0.05
+      normalizedCls * 0.05
   );
+
+  // Sprawdzenie czy wynik jest poprawny
+  if (isNaN(ecoScore) || ecoScore < 0 || ecoScore > 100) {
+    console.error("❌ Błąd obliczania EcoScore:", {
+      performance,
+      normalizedBytes,
+      normalizedBootup,
+      hostingGreen,
+      imageOptimization,
+      normalizedCls,
+      wynik: ecoScore,
+    });
+    throw new Error(`Nieprawidłowy wynik EcoScore: ${ecoScore}`);
+  }
+
+  console.log(`✅ Obliczony EcoScore: ${ecoScore}`);
 
   const ecoData = {
     ecoScore,
@@ -120,8 +380,30 @@ function calculateEcoScore(report) {
     cls,
   };
 
-  // Oblicz emisję CO2
-  const co2Data = calculateCO2(ecoData);
+  // Oblicz emisję CO2 - z obsługą błędów aby nie przerywać analizy
+  let co2Data = null;
+  try {
+    console.log("🔄 Próba obliczenia CO2 dla ecoData:", {
+      totalBytes: ecoData.totalBytes,
+      bootupTime: ecoData.bootupTime,
+      hostingGreen: ecoData.hostingGreen,
+    });
+    co2Data = calculateCO2(ecoData);
+    console.log("✅ CO2 obliczone pomyślnie:", co2Data ? "tak" : "nie");
+  } catch (co2Error) {
+    console.error(
+      "⚠️ Błąd obliczania CO2 (analiza kontynuuje bez danych CO2):",
+      co2Error.message,
+      co2Error.stack
+    );
+    // Nie przerywamy analizy - zwracamy ecoData bez co2
+  }
+
+  console.log("📤 Zwracam ecoData z co2:", {
+    hasCo2: !!co2Data,
+    co2Type: typeof co2Data,
+    co2Value: co2Data,
+  });
 
   return {
     ...ecoData,
@@ -169,8 +451,33 @@ function aggregateEcoScores(ecoScoresArray) {
     cls: avg(ecoScoresArray.map((e) => e.cls)),
   };
 
-  // Oblicz CO2 dla agregowanych danych
-  const co2Data = calculateCO2(ecoData);
+  // Oblicz CO2 dla agregowanych danych - z obsługą błędów
+  let co2Data = null;
+  try {
+    console.log("🔄 Próba obliczenia CO2 dla agregowanych danych:", {
+      totalBytes: ecoData.totalBytes,
+      bootupTime: ecoData.bootupTime,
+      hostingGreen: ecoData.hostingGreen,
+    });
+    co2Data = calculateCO2(ecoData);
+    console.log(
+      "✅ CO2 dla agregowanych danych obliczone pomyślnie:",
+      co2Data ? "tak" : "nie"
+    );
+  } catch (co2Error) {
+    console.error(
+      "⚠️ Błąd obliczania CO2 dla agregowanych danych (analiza kontynuuje bez danych CO2):",
+      co2Error.message,
+      co2Error.stack
+    );
+    // Nie przerywamy analizy - zwracamy ecoData bez co2
+  }
+
+  console.log("📤 Zwracam agregowane ecoData z co2:", {
+    hasCo2: !!co2Data,
+    co2Type: typeof co2Data,
+    co2Value: co2Data,
+  });
 
   return {
     ...ecoData,
@@ -570,7 +877,9 @@ app.use((err, req, res, next) => {
 
 // Start server with error handling for port conflicts
 const server = app.listen(PORT, () => {
-  console.log(`🌍 Serwer EcoLabel uruchomiony na http://localhost:${PORT}`);
+  console.log(
+    `🌍 Serwer ZielonaPlaneta uruchomiony na http://localhost:${PORT}`
+  );
   console.log(`📊 API dostępne na http://localhost:${PORT}/api`);
   console.log(`🌱 Gotowy do analizy stron!`);
 });
@@ -581,7 +890,7 @@ server.on("error", (err) => {
     console.log(`Próbuję port ${PORT + 1}...`);
     app.listen(PORT + 1, () => {
       console.log(
-        `🌍 Serwer EcoLabel uruchomiony na http://localhost:${PORT + 1}`
+        `🌍 Serwer ZielonaPlaneta uruchomiony na http://localhost:${PORT + 1}`
       );
       console.log(`📊 API dostępne na http://localhost:${PORT + 1}/api`);
       console.log(`🌱 Gotowy do analizy stron!`);

@@ -25,7 +25,7 @@ $energy-colors: (
   // Żółty
   E: #ff9800,
   // Pomarańczowy
-  F: #ff5722 // Czerwony,,,,,,,,,,,,,,,,,,,,,,,,
+  F: #ff5722 // Czerwony,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 );
 
 // Reset i podstawowe style
@@ -80,8 +80,63 @@ body {
     transition: transform $transition-normal;
   }
 
+  .logo-img {
+    width: 4.5rem;
+    height: 4.5rem;
+    object-fit: cover; // Zmienione z contain na cover, aby wypełnić cały obszar
+    transition: filter 0.3s ease;
+    filter: drop-shadow(0 2px 8px rgba(46, 204, 113, 0.3));
+    border-radius: 50%;
+    display: block;
+    // Animacja pulsowania - zawsze aktywna
+    animation: logoPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes logoPulse {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0.95;
+    }
+  }
+
+  @keyframes logoPulseRotate {
+    0% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
+    25% {
+      transform: scale(1.05) rotate(90deg);
+      opacity: 0.95;
+    }
+    50% {
+      transform: scale(1.05) rotate(180deg);
+      opacity: 0.95;
+    }
+    75% {
+      transform: scale(1.05) rotate(270deg);
+      opacity: 0.95;
+    }
+    100% {
+      transform: scale(1) rotate(360deg);
+      opacity: 1;
+    }
+  }
+
+  // Podczas hover: pulsowanie + kręcenie razem, ale z tą samą częstotliwością pulsowania
+  &:hover .logo-img {
+    animation: logoPulseRotate 6s ease-in-out infinite;
+    filter: drop-shadow(0 4px 12px rgba(46, 204, 113, 0.5));
+    transform-origin: center;
+  }
+
   &:hover .icon-leaf {
-    transform: scale(1.05);
+    transform: scale(1.08);
+    filter: drop-shadow(0 4px 12px rgba(46, 204, 113, 0.5));
   }
 
   h1 {
@@ -109,7 +164,55 @@ body {
   gap: $spacing-xxl;
 }
 
-// Sekcja wprowadzania
+// Wspólna sekcja wprowadzania (dla wszystkich funkcji)
+.common-input-section {
+  @include card-base;
+  border: 1px solid $gray-300;
+  @include fade-in(0.8s);
+  margin-bottom: $spacing-xl;
+  padding: $spacing-xl;
+
+  .input-hint {
+    margin-top: $spacing-md;
+    font-size: $font-size-sm;
+    color: $gray-600;
+    line-height: 1.6;
+  }
+}
+
+.input-wrapper-common {
+  @include flex-column;
+  gap: $spacing-lg;
+}
+
+.common-url-textarea {
+  @include input-base;
+  min-height: 150px;
+  resize: vertical;
+  font-family: "Monaco", "Courier New", monospace;
+  font-size: $font-size-sm;
+  padding: $spacing-md;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius-md;
+  width: 100%;
+}
+
+.common-buttons {
+  display: flex;
+  gap: $spacing-md;
+  flex-wrap: wrap;
+
+  @include mobile {
+    @include flex-column;
+  }
+
+  button {
+    flex: 1;
+    min-width: 150px;
+  }
+}
+
+// Sekcja wprowadzania (dla zachowania kompatybilności)
 .input-section {
   @include card-base;
   border: 1px solid $gray-300;
@@ -492,12 +595,14 @@ body {
 
     // Aktywna klasa - wyróżniona jak na prawdziwej etykiecie
     &.active {
-      transform: scale(1.05) translateX(8px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3),
-        inset 0 0 0 3px rgba(255, 255, 255, 0.3);
+      transform: scale(1.15) translateX(0px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4),
+        inset 0 0 0 3px rgba(255, 255, 255, 0.4);
       z-index: 2;
-      border: 2px solid rgba(255, 255, 255, 0.5);
-      margin: -2px;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      margin: 0;
+      font-size: 1.75rem;
+      font-weight: 900;
     }
   }
 }
@@ -926,6 +1031,13 @@ body {
       font-size: 1.8rem;
     }
 
+    .logo-img {
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 50%;
+      object-fit: cover; // Zmienione z contain na cover
+    }
+
     .icon-leaf {
       @include icon-size(2rem);
     }
@@ -1336,8 +1448,53 @@ body {
   }
 }
 
-// Стиль для кнопки Wyczyść в Performance Testing
-button.btn-secondary {
+// Styl dla przycisku Wyczyść formularz
+#clear-btn {
+  @include button-base;
+  background: rgba(255, 255, 255, 0.9);
+  color: $gray-700;
+  border: 1.5px solid $gray-300;
+  min-width: 140px;
+  font-weight: $font-weight-medium;
+  font-size: $font-size-sm;
+  text-transform: none;
+  letter-spacing: 0.3px;
+  transition: all $transition-normal;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
+
+  .icon {
+    opacity: 0.8;
+    transition: opacity $transition-normal;
+  }
+
+  &:hover {
+    background: $gray-50;
+    border-color: $gray-400;
+    color: $gray-900;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+
+    .icon {
+      opacity: 1;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  @include mobile {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+// Styl dla innych przycisków btn-secondary (backward compatibility)
+button.btn-secondary:not(#clear-btn) {
   @include button-secondary;
   text-transform: uppercase;
   letter-spacing: 0.5px;

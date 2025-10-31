@@ -1,4 +1,4 @@
-# 🌟 Funkcje - EcoLabel 2.0
+# 🌟 Funkcje - ZielonaPlaneta 2.0
 
 ## 📋 Zawartość
 
@@ -340,4 +340,4 @@ console.table(results);
 
 ---
 
-**🌿 Dziękujemy za korzystanie z EcoLabel do analizy ekologiczności Twoich witryn!**
+**🌿 Dziękujemy za korzystanie z ZielonaPlaneta do analizy ekologiczności Twoich witryn!**

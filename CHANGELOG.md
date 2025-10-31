@@ -197,4 +197,4 @@ Jeśli masz:
 
 ---
 
-**Dziękujemy za korzystanie z EcoLabel! 🌿**
+**Dziękujemy za korzystanie z ZielonaPlaneta! 🌿**

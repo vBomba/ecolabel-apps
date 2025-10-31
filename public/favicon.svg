@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Gradient dla Ziemi -->
+    <linearGradient id="earthGradientSmall" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a90e2;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2ecc71;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#27ae60;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Animacja pulsowania -->
+    <style>
+      @keyframes pulse {
+        0%, 100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.05);
+          opacity: 0.95;
+        }
+      }
+      .earth-circle {
+        animation: pulse 3s ease-in-out infinite;
+        transform-origin: center;
+      }
+      .forest-group {
+        animation: pulse 3s ease-in-out infinite;
+        animation-delay: 0.1s;
+        transform-origin: center;
+      }
+    </style>
+  </defs>
+  
+  <!-- Ziemia bez białego tła -->
+  <circle cx="32" cy="32" r="28" fill="url(#earthGradientSmall)" class="earth-circle"/>
+  
+  <!-- Kontynent z lasem -->
+  <path d="M 20 26 Q 24 20 30 24 Q 36 22 42 26 Q 44 30 42 34 Q 38 36 32 34 Q 26 36 22 34 Q 20 30 20 26" 
+        fill="#27ae60" opacity="0.8" class="forest-group"/>
+  
+  <!-- Małe drzewa -->
+  <g class="forest-group">
+    <!-- Ameryka Północna -->
+    <rect x="26" y="28" width="1" height="3" fill="#1e8449"/>
+    <circle cx="26.5" cy="27" r="1.5" fill="#27ae60"/>
+    <rect x="30" y="27" width="0.8" height="2.5" fill="#1e8449"/>
+    <circle cx="30.4" cy="26" r="1.2" fill="#229954"/>
+    
+    <!-- Ameryka Południowa -->
+    <rect x="20" y="42" width="1" height="4" fill="#1e8449"/>
+    <circle cx="20.5" cy="41" r="1.5" fill="#27ae60"/>
+    
+    <!-- Europa/Azja -->
+    <rect x="28" y="26" width="0.8" height="3" fill="#1e8449"/>
+    <circle cx="28.4" cy="25" r="1.2" fill="#27ae60"/>
+    <rect x="32" y="28" width="1" height="3.5" fill="#1e8449"/>
+    <circle cx="32.5" cy="27" r="1.5" fill="#229954"/>
+    <rect x="36" y="30" width="1" height="3" fill="#1e8449"/>
+    <circle cx="36.5" cy="29" r="1.3" fill="#27ae60"/>
+    
+    <!-- Afryka -->
+    <rect x="28" y="38" width="1" height="4" fill="#1e8449"/>
+    <circle cx="28.5" cy="37" r="1.5" fill="#229954"/>
+    <rect x="32" y="40" width="0.8" height="3.5" fill="#1e8449"/>
+    <circle cx="32.4" cy="39" r="1.3" fill="#27ae60"/>
+  </g>
+</svg>

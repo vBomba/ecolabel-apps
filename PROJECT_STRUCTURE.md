@@ -1,4 +1,4 @@
-# 📁 Struktura Projektu EcoLabel
+# 📁 Struktura Projektu ZielonaPlaneta
 
 Kompleksowy przewodnik struktury katalogów i plików projektu.
 

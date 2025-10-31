@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EcoLabel - Analiza ekologiczności stron internetowych</title>
+    <title>ZielonaPlaneta - Analiza ekologiczności stron internetowych</title>
+    <link rel="icon" type="image/jpeg" href="favicon.jpg" />
+    <link rel="apple-touch-icon" href="logo.jpg" />
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
@@ -11,8 +13,8 @@
     <div class="container">
       <header class="header">
         <div class="logo">
-          <i class="icon icon-leaf"></i>
-          <h1>EcoLabel</h1>
+          <img src="logo.jpg" alt="ZielonaPlaneta Logo" class="logo-img" />
+          <h1>ZielonaPlaneta</h1>
         </div>
         <p class="subtitle">Analiza ekologiczności stron internetowych</p>
         <nav
@@ -44,74 +46,65 @@
               background: rgba(255, 255, 255, 0.1);
               border-radius: 8px;
             "
-            >Performance Testing</a
+            >Analiza interfejsu użytkownika</a
           >
         </nav>
       </header>
 
       <main class="main-content">
+        <!-- Wspólny input dla wszystkich funkcji -->
+        <div class="common-input-section">
+          <div class="input-group">
+            <label for="common-url-input"
+              >Wprowadź URL strony/stron do analizy (jeden na linię):</label
+            >
+            <div class="input-wrapper-common">
+              <textarea
+                id="common-url-input"
+                class="common-url-textarea"
+                placeholder="https://example.com&#10;lub wiele URL (jeden na linię):&#10;https://example.com/page1&#10;https://example.com/page2"
+                rows="6"
+              ></textarea>
+              <div class="common-buttons">
+                <button id="analyze-btn" class="analyze-btn">
+                  <i class="icon icon-search"></i>
+                  Analizuj ekologiczność
+                </button>
+                <button
+                  id="performance-btn"
+                  class="analyze-btn performance-btn"
+                >
+                  <i class="icon icon-chart-bar"></i>
+                  Analizuj interfejs użytkownika
+                </button>
+                <button id="clear-btn" class="btn-secondary">
+                  Wyczyść formularz
+                </button>
+              </div>
+            </div>
+            <p class="input-hint">
+              <strong>Analiza ekologiczności:</strong> Wprowadź jeden URL
+              (analiza pojedynczej strony) lub wiele URL (jeden na linię, max 10
+              - analiza wielu stron serwisu)<br />
+              <strong>Analiza interfejsu użytkownika:</strong> Wprowadź URL w
+              formacie nazwa|url (np. Homepage|https://example.com) lub po
+              prostu URL
+            </p>
+          </div>
+        </div>
+
         <!-- Tabs Navigation -->
         <div class="tabs">
           <button class="tab-button active" data-tab="eco-analysis">
-            🌱 Eco Analysis
+            🌱 Analiza ekologiczności
           </button>
           <button class="tab-button" data-tab="performance">
-            ⚡ Performance Testing
+            ⚡ Analiza interfejsu użytkownika
           </button>
         </div>
 
         <!-- Eco Analysis Tab -->
         <div id="eco-analysis" class="tab-content active">
-          <div class="input-section">
-            <div class="input-group">
-              <label for="url-input"
-                >Wprowadź URL strony internetowej do analizy:</label
-              >
-              <div class="input-wrapper">
-                <input
-                  type="url"
-                  id="url-input"
-                  placeholder="https://example.com"
-                  required
-                />
-                <button id="analyze-btn" class="analyze-btn">
-                  <i class="icon icon-search"></i>
-                  Analizuj
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Multi-page analysis section -->
-          <div class="multi-page-section">
-            <h3>🌐 Analiza wielu stron serwisu</h3>
-            <p>
-              Analizuj kilka stron jednego serwisu i otrzymaj wspólną etykietę
-              ekologiczności:
-            </p>
-            <div class="input-group">
-              <label for="multi-urls-input"
-                >Wprowadź adresy URL (jeden na linię, max 10):</label
-              >
-              <div class="input-wrapper-multi">
-                <textarea
-                  id="multi-urls-input"
-                  placeholder="https://www.example.com/
-https://www.example.com/page1
-https://www.example.com/page2"
-                  rows="5"
-                ></textarea>
-                <button
-                  id="analyze-multi-btn"
-                  class="analyze-btn analyze-multi"
-                >
-                  <i class="icon icon-chart-line"></i>
-                  Analizuj wiele stron
-                </button>
-              </div>
-            </div>
-          </div>
-
           <div id="progress-section" class="progress-section hidden">
             <div class="progress-header">
               <h3>Analiza w toku...</h3>
@@ -315,11 +308,11 @@ https://www.example.com/page2"
             <div class="actions">
               <button id="new-analysis-btn" class="btn-secondary">
                 <i class="icon icon-plus"></i>
-                Nowa analiza
+                Rozpocznij nową analizę
               </button>
               <button id="download-report-btn" class="btn-primary">
                 <i class="icon icon-download"></i>
-                Pobierz raport
+                Pobierz raport JSON
               </button>
             </div>
           </div>
@@ -329,34 +322,15 @@ https://www.example.com/page2"
         <!-- Performance Testing Tab -->
         <div id="performance" class="tab-content">
           <div class="performance-tab-wrapper">
-            <p style="color: rgba(255, 255, 255, 0.8); margin-bottom: 2rem">
-              Test wydajności stron przy użyciu Selenium WebDriver i Chrome
-              DevTools
+            <p style="color: rgba(0, 0, 0, 0.7); margin-bottom: 2rem">
+              Analiza interfejsu użytkownika stron przy użyciu Puppeteer i
+              Chrome DevTools
             </p>
-
-            <div class="url-input-container">
-              <h3>Dodaj strony do testowania</h3>
-              <p>
-                Wprowadź URL stron (jeden na linię) w formacie: nazwa|url
-                <br />Przykład: <br />Homepage|https://www.example.com
-                <br />About|https://www.example.com/about
-                <br />Contact|https://www.example.com/contact
-              </p>
-              <textarea
-                id="performance-textarea"
-                class="url-input"
-                placeholder="Homepage|https://www.example.com&#10;About|https://www.example.com/about&#10;Contact|https://www.example.com/contact"
-                rows="8"
-              ></textarea>
-
-              <button
-                class="btn-run-tests analyze-multi"
-                onclick="loadResults()"
-              >
-                <i class="icon icon-chart-line"></i>
-                Uruchom testy
-              </button>
-            </div>
+            <p style="color: rgba(0, 0, 0, 0.6); margin-bottom: 1rem">
+              Wprowadź URL stron w formacie: nazwa|url (np.
+              Homepage|https://www.example.com) lub po prostu URL. Użyj
+              wspólnego pola powyżej.
+            </p>
 
             <div id="charts"></div>
           </div>
@@ -379,7 +353,10 @@ https://www.example.com/page2"
       </main>
 
       <footer class="footer">
-        <p>&copy; 2025 EcoLabel - Analiza ekologiczności stron internetowych</p>
+        <p>
+          &copy; 2025 ZielonaPlaneta - Analiza ekologiczności stron
+          internetowych
+        </p>
       </footer>
     </div>
 

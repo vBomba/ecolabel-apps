@@ -489,12 +489,14 @@ function updateRecommendations(ecoData) {
 }
 
 // --- Pobierz ocenę na podstawie wyniku ---
+// Podział zgodny z klasyfikacją energetyczną EU (A-F)
 function getGrade(score) {
-  if (score >= 80) return "A";
-  if (score >= 60) return "B";
-  if (score >= 40) return "C";
-  if (score >= 20) return "D";
-  return "F";
+  if (score >= 80) return "A"; // 80-100: Doskonała
+  if (score >= 65) return "B"; // 65-79: Dobra
+  if (score >= 50) return "C"; // 50-64: Zadowalająca
+  if (score >= 35) return "D"; // 35-49: Wymaga poprawek
+  if (score >= 20) return "E"; // 20-34: Znaczące problemy
+  return "F"; // 0-19: Krytyczne
 }
 
 // --- Pobierz opis wyniku ---
@@ -504,6 +506,7 @@ function getScoreDescription(score, grade) {
     B: "Dobrze! Twoja strona ma dobrą efektywność ekologiczną z niewielkim marginesem na poprawę",
     C: "Zadowalająco. Twoja strona wymaga umiarkowanych poprawek ekologiczności",
     D: "Wymaga poprawy. Twoja strona ma znaczące problemy z efektywnością ekologiczną",
+    E: "Znaczące problemy. Twoja strona wymaga poważnych poprawek ekologiczności",
     F: "Krytycznie. Twoja strona wymaga radykalnych poprawek ekologiczności",
   };
   return descriptions[grade] || "Nieokreślone";

@@ -171,11 +171,14 @@ Pobierz konkretny raport
 
 ### EcoScore (0-100)
 
+Podział zgodny z klasyfikacją energetyczną Unii Europejskiej (A-F):
+
 - **A (80-100)**: Doskonała efektywność ekologiczna
-- **B (60-79)**: Dobra efektywność z niewielkimi poprawkami
-- **C (40-59)**: Zadowalająca z umiarkowanymi poprawkami
-- **D (20-39)**: Wymaga znaczących poprawek
-- **F (0-19)**: Krytyczne problemy
+- **B (65-79)**: Dobra efektywność z niewielkimi poprawkami
+- **C (50-64)**: Zadowalająca z umiarkowanymi poprawkami
+- **D (35-49)**: Wymaga znaczących poprawek
+- **E (20-34)**: Znaczące problemy z efektywnością
+- **F (0-19)**: Krytyczne problemy wymagające radykalnych poprawek
 
 ### Algorytm obliczania
 
@@ -332,13 +335,14 @@ https://www.example.com/services
 
 ### Eco-Label Grading
 
-| Grade | Ocena     | Zakres | Kolor           |
-| ----- | --------- | ------ | --------------- |
-| A     | Excellent | 80-100 | Zielony         |
-| B     | Good      | 60-79  | Żółty           |
-| C     | Fair      | 40-59  | Pomarańczowy    |
-| D     | Poor      | 20-39  | Czerwony        |
-| F     | Critical  | 0-19   | Ciemna czerwień |
+| Grade | Ocena     | Zakres | Kolor         |
+| ----- | --------- | ------ | ------------- |
+| A     | Excellent | 80-100 | Ciemna zieleń |
+| B     | Good      | 65-79  | Jasna zieleń  |
+| C     | Fair      | 50-64  | Żółto-zielony |
+| D     | Poor      | 35-49  | Żółty         |
+| E     | Very Poor | 20-34  | Pomarańczowy  |
+| F     | Critical  | 0-19   | Czerwony      |
 
 ### Algorytm Agregacji
 

@@ -178,14 +178,16 @@ function aggregateEcoScores(ecoScoresArray) {
   };
 }
 
-// Określenie eco-label na podstawie wyniku
+// Określenie eco-label na podstawie wyniku (zgodne z klasyfikacją energetyczną EU A-F)
 function getEcoLabel(ecoScore) {
   if (ecoScore >= 80)
-    return { grade: "A", label: "Excellent", color: "#27ae60" };
-  if (ecoScore >= 60) return { grade: "B", label: "Good", color: "#f39c12" };
-  if (ecoScore >= 40) return { grade: "C", label: "Fair", color: "#e74c3c" };
-  if (ecoScore >= 20) return { grade: "D", label: "Poor", color: "#c0392b" };
-  return { grade: "F", label: "Critical", color: "#8b0000" };
+    return { grade: "A", label: "Excellent", color: "#00852e" }; // Ciemna zieleń
+  if (ecoScore >= 65) return { grade: "B", label: "Good", color: "#6cae3a" }; // Jasna zieleń
+  if (ecoScore >= 50) return { grade: "C", label: "Fair", color: "#b0cc33" }; // Żółto-zielony
+  if (ecoScore >= 35) return { grade: "D", label: "Poor", color: "#fdd835" }; // Żółty
+  if (ecoScore >= 20)
+    return { grade: "E", label: "Very Poor", color: "#ff9800" }; // Pomarańczowy
+  return { grade: "F", label: "Critical", color: "#ff5722" }; // Czerwony
 }
 
 // Główna funkcja analizy

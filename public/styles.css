@@ -801,24 +801,51 @@ body {
 .energy-label {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 4px 2px;
-  background: #f9f9f9;
-  border: 1px solid #d9d9d9;
+  gap: 0;
+  padding: 8px 6px;
+  background: #ffffff;
+  border: 2px solid #d9d9d9;
   border-radius: 8px;
-  min-width: 50px;
+  min-width: 70px;
+  width: 70px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+.energy-label::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
 }
 .energy-label .energy-class {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.25rem 0.5rem;
+  padding: 12px 8px;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.5rem;
   color: white;
-  min-width: 40px;
-  border-radius: 6px;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 50px;
+  width: 100%;
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.energy-label .energy-class::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.1) 100%);
+  pointer-events: none;
 }
 .energy-label .energy-class.grade-A {
   background: #00852e;
@@ -839,7 +866,11 @@ body {
   background: #ff5722;
 }
 .energy-label .energy-class.active {
-  transform: scale(1.1);
+  transform: scale(1.05) translateX(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 0 0 3px rgba(255, 255, 255, 0.3);
+  z-index: 2;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  margin: -2px;
 }
 
 .score-circle {
